@@ -12,16 +12,16 @@ const envVarsSchema = Joi.object({
         .default(4000),
     JWT_SECRET: Joi.string().required()
         .description('JWT Secret required to sign'),
-    PG_DB: Joi.string().required()
-        .description('Postgres database name'),
-    PG_PORT: Joi.number()
-        .default(5432),
-    PG_HOST: Joi.string()
+    MYSQL_DB: Joi.string().required()
+        .description('MYSQL database name'),
+    MYSQL_PORT: Joi.number()
+        .default(3606),
+    MYSQL_HOST: Joi.string()
         .default('localhost'),
-    PG_USER: Joi.string().required()
-        .description('Postgres username'),
-    PG_PASSWD: Joi.string().allow('')
-        .description('Postgres password'),
+    MYSQL_USER: Joi.string().required()
+        .description('MYSQL username'),
+    MYSQL_PASSWD: Joi.string().allow('')
+        .description('MYSQL password'),
 }).unknown()
     .required();
 
@@ -35,11 +35,11 @@ const config = {
     port: envVars.PORT,
     jwtSecret: envVars.JWT_SECRET,
     postgres: {
-        db: envVars.PG_DB,
-        port: envVars.PG_PORT,
-        host: envVars.PG_HOST,
-        user: envVars.PG_USER,
-        passwd: envVars.PG_PASSWD,
+        db: envVars.MYSQL_DB,
+        port: envVars.MYSQL_PORT,
+        host: envVars.MYSQL_HOST,
+        user: envVars.MYSQL_USER,
+        passwd: envVars.MYSQL_PASSWD,
     },
 };
 

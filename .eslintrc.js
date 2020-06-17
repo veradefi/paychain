@@ -4,7 +4,8 @@ module.exports = {
         "import"
     ],
     "rules": {
-        "indent": ["error", 4]
+        "indent": ["error", 4],
+        'no-console': 'off'
     },
     "parserOptions": {
         "sourceType": "module"

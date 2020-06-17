@@ -11,7 +11,7 @@ const sequelize = new Sequelize(config.postgres.db,
                                 config.postgres.user,
                                 config.postgres.passwd,
     {
-        dialect: 'postgres',
+        dialect: 'mysql',
         port: config.postgres.port,
         host: config.postgres.host,
     });
@@ -31,9 +31,12 @@ fs.readdirSync(modelsDir)
 // Synchronizing any model changes with database.
 sequelize
     .sync()
-    .then((err) => {
-        if (err) console.log('An error occured %j', err);
-        else console.log('Database synchronized');
+    .then(() => {
+        console.log('Database synchronized');
+    })
+    .catch((err) => {
+        console.log(err);
+        console.log('An error occured %j', err);
     });
 
 // assign the sequelize variables to the db object and returning the db.

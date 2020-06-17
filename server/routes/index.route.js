@@ -1,6 +1,6 @@
 import express from 'express';
-import userRoutes from './user.route';
-import authRoutes from './auth.route';
+import accountRoutes from './account.route';
+import transactionRoutes from './transaction.route';
 
 const router = express.Router(); // eslint-disable-line new-cap
 
@@ -9,10 +9,10 @@ router.get('/health-check', (req, res) =>
   res.send('OK')
 );
 
-// mount user routes at /users
-router.use('/users', userRoutes);
+// mount account routes at /account
+router.use('/accounts', accountRoutes);
 
-// mount auth routes at /auth
-router.use('/auth', authRoutes);
+// mount transaction routes at /transaction
+router.use('/transactions', transactionRoutes);
 
 export default router;
