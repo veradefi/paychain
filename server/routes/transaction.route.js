@@ -1,12 +1,16 @@
 import express from 'express';
+import validate from 'express-validation';
 import transactionCtrl from '../controllers/transaction.controller';
+import paramValidation from '../../config/param-validation';
 
 const router = express.Router(); // eslint-disable-line new-cap
 
 router.route('/')
 
     /** POST /api/transactions - Create new transaction */
-    .post(transactionCtrl.create);
+    .post(validate(paramValidation.createTransaction), transactionCtrl.create)
+    /** GET /api/transactions - Search transactions */
+    .get(transactionCtrl.search);
 
 router.route('/:transactionId')
 
