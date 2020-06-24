@@ -15,6 +15,10 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false,
             defaultValue: sequelize.NOW,
         },
+        address: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
     });
 
     return Account;

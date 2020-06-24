@@ -1,5 +1,6 @@
 import httpStatus from 'http-status';
 import db from '../../config/sequelize';
+import { createAccount as web3CreateAccount } from '../lib/web3';
 
 const Account = db.Account;
 
@@ -33,13 +34,17 @@ function get(req, res) {
  * @returns {Account}
  */
 function create(req, res, next) {
-    const account = Account.build({
-        balance: req.body.balance,
-    });
-
-    account.save()
-        .then(savedAccount => res.json(savedAccount))
-        .catch(e => next(e));
+    web3CreateAccount()
+      .then((address) => {
+          const account = Account.build({
+              balance: req.body.balance,
+              address,
+          });
+          account.save()
+              .then(savedAccount => res.json(savedAccount))
+              .catch(e => next(e));
+      })
+      .catch(e => next(e));
 }
 
 

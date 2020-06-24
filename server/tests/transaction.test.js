@@ -13,6 +13,11 @@ chai.config.includeStack = true;
  */
 before(() => {
     db.sequelize.sync();
+    db.Currency.create({
+        full_name: 'My Token',
+        short_name: 'My Token',
+        symbol: 'MYT',
+    });
 });
 
 after(() => {
@@ -24,6 +29,7 @@ describe('## Transaction APIs', () => {
         amount: 100,
         to: 1,
         from: 1,
+        currency_id: 1,
     };
 
     describe('# POST /api/transactions', () => {

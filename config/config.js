@@ -22,6 +22,10 @@ const envVarsSchema = Joi.object({
         .description('MYSQL username'),
     MYSQL_PASSWD: Joi.string().allow('')
         .description('MYSQL password'),
+    PROVIDER_URL: Joi.string()
+        .default('http://localhost:8545'),
+    ENTROPY: Joi.string()
+        .default('54674321§3456764321§345674321§3453647544±±±§±±±!!!43534534534534'),
 }).unknown()
     .required();
 
@@ -40,6 +44,10 @@ const config = {
         host: envVars.MYSQL_HOST,
         user: envVars.MYSQL_USER,
         passwd: envVars.MYSQL_PASSWD,
+    },
+    web3: {
+        provider_url: envVars.PROVIDER_URL,
+        entropy: envVars.ENTROPY,
     },
 };
 

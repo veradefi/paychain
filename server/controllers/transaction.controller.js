@@ -48,6 +48,7 @@ function create(req, res, next) {
         from: req.body.from,
         to: req.body.to,
         amount: req.body.amount,
+        currency_id: req.body.currency_id,
     });
 
     transaction.status = 'initiated';

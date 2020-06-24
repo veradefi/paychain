@@ -36,6 +36,14 @@ module.exports = (sequelize, DataTypes) => {
                 key: 'id',
             },
         },
+        currency_id: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            references: {
+                model: 'currencies',
+                key: 'id',
+            },
+        },
         statusDescription: {
             type: DataTypes.STRING,
             allowNull: true,

@@ -30,7 +30,7 @@ fs.readdirSync(modelsDir)
 
 // Synchronizing any model changes with database.
 sequelize
-    .sync()
+    .sync({ force: false })
     .then(() => {
         console.log('Database synchronized');
     })

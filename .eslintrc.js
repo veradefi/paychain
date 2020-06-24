@@ -5,7 +5,8 @@ module.exports = {
     ],
     "rules": {
         "indent": ["error", 4],
-        'no-console': 'off'
+        'no-console': 'off',
+        "arrow-body-style": ["off"]
     },
     "parserOptions": {
         "sourceType": "module"
