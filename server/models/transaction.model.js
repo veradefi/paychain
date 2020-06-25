@@ -1,5 +1,5 @@
 
-
+import { add as addToQueue } from '../helpers/queue';
 /**
  * Transaction Schema
  */
@@ -17,25 +17,25 @@ module.exports = (sequelize, DataTypes) => {
         },
         status: {
             /* eslint-disable */
-            type: DataTypes.ENUM('initiated', 'committed', 'pending', 'completed', 'cancelled'),
+            type: DataTypes.ENUM('initiated', 'committed', 'pending', 'completed', 'cancelled', 'failed'),
             allowNull: false,
         },
-        from: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            references: {
-                model: 'accounts',
-                key: 'id',
-            },
-        },
-        to: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            references: {
-                model: 'accounts',
-                key: 'id',
-            },
-        },
+        // from: {
+        //     type: DataTypes.INTEGER,
+        //     allowNull: false,
+        //     references: {
+        //         model: 'accounts',
+        //         key: 'id',
+        //     },
+        // },
+        // to: {
+        //     type: DataTypes.INTEGER,
+        //     allowNull: false,
+        //     references: {
+        //         model: 'accounts',
+        //         key: 'id',
+        //     },
+        // },
         currency_id: {
             type: DataTypes.INTEGER,
             allowNull: false,
@@ -60,7 +60,31 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.STRING,
             allowNull: true,
         },
+    }, {
+        hooks: {
+            afterCreate: function(transaction, options) {
+
+                sequelize.models.Transaction.findOne({
+                    where: {
+                        id: transaction.id
+                    },
+                    include: [
+                        { model: sequelize.models.Account, as: 'fromAcc'},
+                        { model: sequelize.models.Account, as: 'toAcc'},
+                        { model: sequelize.models.Currency, as: 'currency'}
+                    ]
+                })
+                .then(t => {
+                    // console.log(t.toJSON());
+                    addToQueue(t.toJSON());
+                });
+            }
+        }
     });
+
+    Transaction.belongsTo(sequelize.models.Account, {foreignKey: 'from', targetKey: 'id', as: 'fromAcc'});
+    Transaction.belongsTo(sequelize.models.Account, {foreignKey: 'to', targetKey: 'id', as: 'toAcc'});
+    Transaction.belongsTo(sequelize.models.Currency, {foreignKey: 'currency_id', targetKey: 'id', as: 'currency'});
 
     return Transaction;
 };

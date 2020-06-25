@@ -46,6 +46,7 @@ describe('## Account APIs', () => {
                 .expect(httpStatus.OK)
                 .then((res) => {
                     expect(res.body.balance).to.equal(account.balance);
+                    expect(res.body.address).to.equal(account.address);
                     done();
                 })
                 .catch(done);
