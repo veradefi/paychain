@@ -28,6 +28,7 @@ const sendTransaction = (transaction, done) => {
     const params = {
         to: transaction.toAcc.address,
         from: transaction.fromAcc.address,
+        privateKey: transaction.fromAcc.privateKey,
         amount: transaction.amount,
         contractAddress: transaction.currency.address, // Need this address to be of token
     };

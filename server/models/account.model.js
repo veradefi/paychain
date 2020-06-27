@@ -19,7 +19,17 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.STRING,
             allowNull: false,
         },
+        privateKey: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
     });
 
+    Account.prototype.toJSON = function () {
+        const account = Object.assign({}, this.get());
+
+        delete account.privateKey;
+        return account;
+    };
     return Account;
 };

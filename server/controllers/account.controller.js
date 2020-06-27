@@ -34,17 +34,15 @@ function get(req, res) {
  * @returns {Account}
  */
 function create(req, res, next) {
-    web3CreateAccount()
-      .then((address) => {
-          const account = Account.build({
-              balance: req.body.balance,
-              address,
-          });
-          account.save()
-              .then(savedAccount => res.json(savedAccount))
-              .catch(e => next(e));
-      })
-      .catch(e => next(e));
+    const web3Account = web3CreateAccount();
+    const account = Account.build({
+        balance: req.body.balance,
+        address: web3Account.address,
+        privateKey: web3Account.privateKey, // TODO: Store this encrypted
+    });
+    account.save()
+        .then(savedAccount => res.json(savedAccount))
+        .catch(e => next(e));
 }
 
 
