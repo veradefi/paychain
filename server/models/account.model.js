@@ -1,5 +1,4 @@
-
-
+import { encrypt } from '../helpers/crypto';
 /**
  * Account Schema
  */
@@ -23,6 +22,12 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.STRING,
             allowNull: false,
         },
+    }, {
+        setterMethods: {
+            privateKey(value) {
+                this.setDataValue('privateKey', encrypt(value));
+            },
+        },
     });
 
     Account.prototype.toJSON = function () {
@@ -31,5 +36,6 @@ module.exports = (sequelize, DataTypes) => {
         delete account.privateKey;
         return account;
     };
+
     return Account;
 };

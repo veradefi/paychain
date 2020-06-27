@@ -1,6 +1,7 @@
 import Web3 from 'web3';
 import Tx from 'ethereumjs-tx';
 import config from '../../config/config';
+import { decrypt } from '../helpers/crypto';
 
 const web3 = new Web3(config.web3.provider_url);
 
@@ -52,8 +53,8 @@ const transfer = (params) => {
                     }],
                 }, [params.to, params.amount]);
 
-                const signedTx = signTransaction(txOptions, params.privateKey);
-                console.log(signedTx);
+                const decryptedPrivKey = decrypt(params.privateKey);
+                const signedTx = signTransaction(txOptions, decryptedPrivKey);
                 web3.eth.sendSignedTransaction(signedTx)
                 .then((reciept) => {
                     resolve(reciept);

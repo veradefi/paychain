@@ -10,8 +10,8 @@ const envVarsSchema = Joi.object({
         .default('development'),
     PORT: Joi.number()
         .default(4000),
-    JWT_SECRET: Joi.string().required()
-        .description('JWT Secret required to sign'),
+    SECRET_KEY: Joi.string().required()
+        .description('Secret required to sign'),
     MYSQL_DB: Joi.string().required()
         .description('MYSQL database name'),
     MYSQL_PORT: Joi.number()
@@ -37,7 +37,7 @@ if (error) {
 const config = {
     env: envVars.NODE_ENV,
     port: envVars.PORT,
-    jwtSecret: envVars.JWT_SECRET,
+    secretKey: envVars.SECRET_KEY,
     postgres: {
         db: envVars.MYSQL_DB,
         port: envVars.MYSQL_PORT,
