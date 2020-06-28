@@ -20,30 +20,6 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.ENUM('initiated', 'committed', 'pending', 'completed', 'cancelled', 'failed'),
             allowNull: false,
         },
-        // from: {
-        //     type: DataTypes.INTEGER,
-        //     allowNull: false,
-        //     references: {
-        //         model: 'accounts',
-        //         key: 'id',
-        //     },
-        // },
-        // to: {
-        //     type: DataTypes.INTEGER,
-        //     allowNull: false,
-        //     references: {
-        //         model: 'accounts',
-        //         key: 'id',
-        //     },
-        // },
-        currency_id: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            references: {
-                model: 'currencies',
-                key: 'id',
-            },
-        },
         statusDescription: {
             type: DataTypes.STRING,
             allowNull: true,
@@ -63,7 +39,6 @@ module.exports = (sequelize, DataTypes) => {
     }, {
         hooks: {
             afterCreate: function(transaction, options) {
-
                 sequelize.models.Transaction.findOne({
                     where: {
                         id: transaction.id
@@ -75,8 +50,7 @@ module.exports = (sequelize, DataTypes) => {
                     ]
                 })
                 .then(t => {
-                    // console.log(t.toJSON());
-                    addToQueue(t.toJSON());
+                    addToQueue(t, sequelize.models.Transaction);
                 });
             }
         }
