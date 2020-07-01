@@ -1,5 +1,5 @@
 
-import { add as addToQueue } from '../helpers/queue';
+import { add as addToQueue, setModel } from '../helpers/queue';
 /**
  * Transaction Schema
  */
@@ -60,5 +60,6 @@ module.exports = (sequelize, DataTypes) => {
     Transaction.belongsTo(sequelize.models.Account, {foreignKey: 'to', targetKey: 'id', as: 'toAcc'});
     Transaction.belongsTo(sequelize.models.Currency, {foreignKey: 'currency_id', targetKey: 'id', as: 'currency'});
 
+    setModel(Transaction);
     return Transaction;
 };

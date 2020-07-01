@@ -14,6 +14,7 @@ const sequelize = new Sequelize(config.postgres.db,
         dialect: 'mysql',
         port: config.postgres.port,
         host: config.postgres.host,
+        logging: false,
     });
 
 const modelsDir = path.normalize(`${__dirname}/../server/models`);

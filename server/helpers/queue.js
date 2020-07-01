@@ -1,16 +1,21 @@
 import kue from 'kue';
-import { transfer } from '../lib/web3';
+import TransactionManager from './TransactionManager';
+import config from '../../config/config';
 
 const queue = kue.createQueue();
+const transactionManager = new TransactionManager();
+
 let Model;
-const add = (transaction, TransactionModel) => {
-    // TODO: Need a better way to handle this
+const setModel = (TransactionModel) => {
     Model = TransactionModel;
+};
+
+const add = (transaction) => {
     const job = queue
                     .create('transactions', transaction)
                     .priority('high')
-                    .attempts(1)
-                    .backoff({ type: 'exponential' })
+                    .attempts(3)
+                    .backoff({delay: 6000, type:'fixed'})
                     .save();
     job.on('start', () => {
         console.log('Queue job started', job.id);
@@ -18,7 +23,7 @@ const add = (transaction, TransactionModel) => {
     });
 
     job.on('complete', (result) => {
-        console.log('Job completed with data ', result);
+        console.log('Job completed with data ');
     });
 
     job.on('failed', (errorMessage) => {
@@ -26,13 +31,14 @@ const add = (transaction, TransactionModel) => {
     });
 };
 
-const setStatus = (transaction, status) => {
+const setStatus = (transaction, status, statusDescription) => {
     return new Promise((resolve, reject) => {
         Model.findOne({ where: { id: transaction.id } })
             .then((newTransaction) => {
                 if (newTransaction) {
-                    newTransaction.updateAttributes({
+                    return newTransaction.updateAttributes({
                         status,
+                        statusDescription,
                     })
                     .then(() => {
                         resolve(newTransaction);
@@ -49,37 +55,37 @@ const setStatus = (transaction, status) => {
 const sendTransaction = (transaction, done) => {
     const params = {
         to: transaction.toAcc.address,
-        from: transaction.fromAcc.address,
+        from: "0x908991b223b90e730d8274df43b741b61c77f47f",//transaction.fromAcc.address,
         privateKey: transaction.fromAcc.privateKey,
         amount: transaction.amount,
         contractAddress: transaction.currency.address, // Need this address to be of token
     };
 
-    setStatus(transaction, 'pending').then(() => {
-        transfer(params).then((receipt) => {
-            console.log(receipt);
-            setStatus(transaction, 'completed').then(() => {
-                done(receipt);
+    return setStatus(transaction, 'pending').then(() => {
+        transactionManager.addTransaction(params, (receipt) => {
+            setStatus(transaction, 'completed', JSON.stringify(receipt)).then(() => {
+                done(null, receipt);
             });
-        })
-        .catch((error) => {
-            console.error(error);
-            setStatus(transaction, 'failed').then(() => {
+        }, (error) => {
+            setStatus(transaction, 'failed', error.toString()).then(() => {
                 done(error);
             });
         });
+        done(null, transaction);
+        return null;
     });
 };
 
 const processQueue = () => {
     queue.process('transactions', (job, done) => {
         sendTransaction(job.data, done);
+        // done();
     });
 };
 
-processQueue();
+processQueue();  
 
 export default {
-
+    setModel,
     add,
 };
