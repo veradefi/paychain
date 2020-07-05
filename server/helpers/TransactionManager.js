@@ -1,37 +1,38 @@
 import EventEmitter from 'events';
-import { getTransactionCount, web3, transfer } from '../lib/web3';
+import { getTransactionCount, signTransaction, web3 } from '../lib/web3';
+import { decrypt } from '../helpers/crypto';
 
 class Slot {
-    slot = {}; 
-
-    constructor (nonce, params, success, error) {
-        this.slot.transaction = this.generateTransaction(nonce, params);
-        this.slot.params = params;
-        this.slot.nonce = nonce;
-        this.slot.successCallback = success;
-        this.slot.errorCallback = error;
+    params = {};
+    transaction = {};
+    pendingCallback = null;
+    successCallback = null;
+    errorCallback = null;
+    receiptTries = 0;
+    constructor (params, pending, success, error) {
+        // this.slot.transaction = this.generateTransaction(nonce, params);
+        this.params = params;
+        this.pendingCallback = pending;
+        this.successCallback = success;
+        this.errorCallback = error;
     };
 
-    process () {
-        return new Promise((resolve, reject) => {
-            const shouldFail = this.slot.nonce % 2 == 0;
-            console.log(shouldFail);
-            if (shouldFail) {
-                this.slot.transaction.nonce = "0x0";
-            }
-
-            return transfer(this.slot.transaction, "").then((receipt) => {
-                console.log("receipt");
-                this.slot.successCallback(receipt);
-                return resolve(receipt);
-            })
-            .catch((error) => {
-                console.log("error", error.toString());
-                this.slot.errorCallback(error);
-                return reject(error);
-            });
-        });
-    };
+    // getReceipt (transactionHash) {
+    //     setTimeout(() => {
+    //         web3.eth.getTransactionReceipt(transactionHash).then((receipt) => {
+    //             this.receiptTries++;
+    //             if (!receipt && this.receiptTries < 20) {
+    //                 this.getReceipt(transactionHash);
+    //             } else {
+    //                 this.successCallback(receipt);
+    //             }
+    //         })
+    //         .catch((error) => {
+    //             // console.log(error);
+    //             this.errorCallback(error);
+    //         });
+    //     }, 5000);
+    // };
 
     generateTransaction (nonce, params) {
         const txOptions = {
@@ -59,44 +60,71 @@ class Slot {
 };
 
 class TransactionManager extends EventEmitter {
-    slots = {};
-    testCount = 0;
+    sending_queue = {};
+    maxPending = 5;
     initSlot (fromAddress) {
         return new Promise((resolve, reject) => {
             getTransactionCount(fromAddress)
             .then((count) => {
-                this.slots[fromAddress] = {};
-                this.slots[fromAddress].nonce = count;
-                this.slots[fromAddress].slots = new Array();
+                this.sending_queue[fromAddress] = {};
+                this.sending_queue[fromAddress].fromAddress = fromAddress;
+                this.sending_queue[fromAddress].slots = [];
 
-                resolve(this.slots[fromAddress]);
+                this.sending_queue[fromAddress].slotInterval = setInterval(() => {
+                    this.processSlot(fromAddress);
+                }, 500);
+
+                resolve(this.sending_queue[fromAddress]);
             });
         });
     }
 
-    addToSlot (fromAddress, params, success, error) {
-        const nonce = this.slots[fromAddress].nonce;
-        this.slots[fromAddress].nonce++;
-        const slot = new Slot(nonce, params, success, error);
-        slot.process().then(() => {
-            // remove slot element
-            // this.slots[fromAddress].slots = ;
-        })
-        .catch((error) => {
-            // remove slot element
-            this.slots[fromAddress].nonce = nonce;
-        })
-
-        this.slots[fromAddress].slots.push(slot);
+    addToSlot (fromAddress, params, pending, success, error) {
+        const slot = new Slot(params, pending, success, error);
+        this.sending_queue[fromAddress].slots.push(slot);
+        if (this.sending_queue[fromAddress].slots.length >= this.maxPending) {
+            this.processSlot(fromAddress);
+        }
     }
 
-    addTransaction (params, success, error) {
-        if (!this.slots[params.from]) {
+    processSlot (fromAddress) {
+        const queue = this.sending_queue[fromAddress];
+        if (queue && queue.slots && queue.slots.length > 0) {
+            this.sendBatchTransactions(queue);
+        }
+    }
+
+    sendBatchTransactions (queue) {
+        getTransactionCount(queue.fromAddress)
+        .then((nonce) => {
+            const batch = new web3.BatchRequest();
+            const slots = queue.slots.splice(0, 10);
+
+            Promise.all(slots.map((slot, index) => {
+                const _nonce = nonce + index;
+                slot.transaction = slot.generateTransaction(nonce + index, slot.params);
+                const decryptedPrivKey = decrypt(slot.params.privateKey);
+                const signedTx = signTransaction(slot.transaction, decryptedPrivKey);
+                batch.add(web3.eth.sendSignedTransaction.request(signedTx, 'receipt', (err, transactionHash) => {
+                    if (err) {
+                        return slot.errorCallback(err, _nonce);
+                    } else {
+                        return slot.pendingCallback(transactionHash, _nonce);
+                    }
+                }));
+            }));
+
+            batch.execute();
+        });
+    }
+
+    addTransaction (params, pending, success, error) {
+        if (!this.sending_queue[params.from]) {
             this.initSlot(params.from).then(() => {
-                this.addToSlot(params.from, params, success, error);
+                this.addToSlot(params.from, params, pending, success, error);
             });
         } else {
-            this.addToSlot(params.from, params, success, error);
+            this.addToSlot(params.from, params, pending, success, error);
         }
     }
 }

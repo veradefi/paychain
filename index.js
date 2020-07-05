@@ -2,6 +2,7 @@ import config from './config/config';
 import app from './config/express';
 /* eslint-disable no-unused-vars */
 import db from './config/sequelize';
+import cron from './server/helpers/cronjob';
 
 const debug = require('debug')('amida-api-boilerplate:index');
 /* eslint-enable no-unused-vars */

@@ -49,8 +49,8 @@ module.exports = (sequelize, DataTypes) => {
                         { model: sequelize.models.Currency, as: 'currency'}
                     ]
                 })
-                .then(t => {
-                    addToQueue(t, sequelize.models.Transaction);
+                .then(newTransaction => {
+                    addToQueue('transactions', newTransaction);
                 });
             }
         }

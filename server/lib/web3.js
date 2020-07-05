@@ -3,7 +3,14 @@ import Tx from 'ethereumjs-tx';
 import config from '../../config/config';
 import { decrypt } from '../helpers/crypto';
 
-const web3 = new Web3(config.web3.provider_url);
+let web3;
+
+const init = () => {
+    if (!web3) {
+        web3 = new Web3(config.web3.provider_url);
+    }
+    return web3;
+};
 
 const createAccount = () => {
     return web3.eth.accounts.create(config.web3.entropy);
@@ -14,7 +21,11 @@ const getAllAccounts = () => {
 };
 
 const getTransactionCount = (address) => {
-    return web3.eth.getTransactionCount(address, 'pending');
+    return web3.eth.getTransactionCount(address);
+};
+
+const getReceipt = (transactionHash) => {
+    return web3.eth.getTransactionReceipt(transactionHash)
 };
 
 const signTransaction = (txOptions, privateKey) => {
@@ -26,23 +37,19 @@ const signTransaction = (txOptions, privateKey) => {
 };
 
 const transfer = (txOptions, encryptedPrivKey) => {
-    return new Promise((resolve, reject) => {
-        const decryptedPrivKey = "0x28777a5aa77c217e4a46ce53c0beb1cb588dc20d7dad1a02dd9d4d19b0e10fb0";//decrypt(params.privateKey);
-        const signedTx = signTransaction(txOptions, decryptedPrivKey);
-        web3.eth.sendSignedTransaction(signedTx)
-        .then((reciept) => {
-            resolve(reciept);
-        })
-        .catch((error) => {
-            reject(error);
-        });
-    });
+    const decryptedPrivKey = "0x28777a5aa77c217e4a46ce53c0beb1cb588dc20d7dad1a02dd9d4d19b0e10fb0";//decrypt(params.privateKey);
+    const signedTx = signTransaction(txOptions, decryptedPrivKey);
+    return web3.eth.sendSignedTransaction(signedTx);
 };
+
+init ();
 
 module.exports = {
     createAccount,
     getAllAccounts,
     transfer,
     getTransactionCount,
+    signTransaction,
     web3,
+    getReceipt,
 };

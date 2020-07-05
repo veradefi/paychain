@@ -13,11 +13,13 @@ import winstonInstance from './winston';
 import routes from '../server/routes/index.route';
 import config from './config';
 import APIError from '../server/helpers/APIError';
+import { processQueue } from '../server/helpers/queue';
 
 const app = express();
 
 if (config.env === 'development') {
     app.use(logger('dev'));
+    processQueue();
 }
 
 // parse body params and attache them to req.body
