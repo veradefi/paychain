@@ -5,21 +5,17 @@ import httpStatus from 'http-status';
 import chai, { expect } from 'chai';
 import db from '../../../config/sequelize';
 import app from '../../../index';
-import config from '../../../config/config';
-import queue from '../../helpers/queue';
 import { getAllAccounts, web3 } from '../../lib/web3';
-const loadtest = require('loadtest');
 
-var _accounts = require('../../json/accounts.json');
-var Token = require("../../../build/contracts/TestERC20.json");
+const jsonAccounts = require('../../json/accounts.json');
+const Token = require('../../../build/contracts/TestERC20.json');
 
 chai.config.includeStack = true;
 
 let accounts = [];
-let apiAccounts = [];
+const apiAccounts = [];
 let tokenOwner;
 let tokenContract;
-let totalSupply = 0;
 /**
  * root level hooks
  */
@@ -33,37 +29,38 @@ before(() => {
 
 describe('## Transaction stress tests', () => {
     describe('# Deploy token and balance transfer', () => {
-
-        after ((done) => {
-            db.Currency.update({address: tokenContract._address},
-                {where:{id:1}})
+        after((done) => {
+            db.Currency.update({ address: tokenContract._address },
+                { where: { id: 1 } });
             done();
         });
 
-        it ('fetch all accounts', (done) => {
+        it('fetch all accounts', (done) => {
             getAllAccounts().then((_accounts) => {
                 accounts = _accounts;
                 done();
             });
         });
 
-        it("deploy token", (done) => {
+        it('deploy token', (done) => {
             tokenOwner = accounts[0];
             const ContractAbi = new web3.eth.Contract(Token.abi);
             ContractAbi
-                .deploy({data: Token.bytecode})
+                .deploy({ data: Token.bytecode })
                 .send({
                     from: tokenOwner,
                     gas: 1500000,
-                    gasPrice: '3000000000'
+                    gasPrice: '3000000000',
                 })
                 .then((result) => {
                     tokenContract = result;
-                    return tokenContract.methods.balanceOf(tokenOwner).call({from: tokenOwner});        
-                }).then((result) => {
-                    totalSupply = result.valueOf();
+                    return tokenContract
+                              .methods
+                              .balanceOf(tokenOwner)
+                              .call({ from: tokenOwner });
+                }).then(() => {
                     done();
-                })
+                });
         });
     });
 
@@ -75,15 +72,14 @@ describe('## Transaction stress tests', () => {
             // startLoadTesting(done);
         });
 
-        for (let i = 0; i < _accounts.length; i++) {
-            let account = {
+        for (let i = 0; i < jsonAccounts.length; i += 1) {
+            const account = {
                 balance: 0,
-                address: _accounts[i].address,
-                privateKey: _accounts[i].privateKey,
+                address: jsonAccounts[i].address,
+                privateKey: jsonAccounts[i].privateKey,
             };
 
             it('should create 10 api accounts', (done) => {
-
                 db.Account.create(account)
                     .then((res) => {
                         apiAccounts.push(res.body);
@@ -136,15 +132,15 @@ describe('## Transaction stress tests', () => {
 //     });
 // }
 
-function sendTransactionRequests (size = 100) {
-    let transaction = {
+function sendTransactionRequests(size = 100) {
+    const transaction = {
         amount: 100,
         to: 2,
         from: 1,
         currency_id: 1,
     };
 
-    for (var i = 0; i < size; ++i) {
+    for (let i = 0; i < size; i += 1) {
         it('should create a new transaction', (done) => {
             request(app)
                 .post('/api/transactions')
@@ -163,10 +159,7 @@ function sendTransactionRequests (size = 100) {
 }
 
 describe('## Transaction APIs', () => {
-    
-    let count = 0;
     describe('# POST /api/transactions', () => {
-
         sendTransactionRequests(100);
     });
 });

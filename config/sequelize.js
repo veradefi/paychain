@@ -16,10 +16,10 @@ const sequelize = new Sequelize(config.postgres.db,
         host: config.postgres.host,
         logging: false,
         pool: {
-          max: 5,
-          min: 0,
-          idle: 20000,
-          acquire: 20000
+            max: 5,
+            min: 0,
+            idle: 20000,
+            acquire: 20000,
         },
     });
 

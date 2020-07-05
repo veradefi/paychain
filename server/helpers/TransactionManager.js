@@ -1,13 +1,12 @@
-import EventEmitter from 'events';
 import { getTransactionCount, signTransaction, web3 } from '../lib/web3';
 import { decrypt } from '../helpers/crypto';
 
 class Slot {
-    params = {};
-    transaction = {};
-    pendingCallback = null;
-    successCallback = null;
-    errorCallback = null;
+    params = {}; // eslint-disable-line
+    transaction = {}; // eslint-disable-line
+    pendingCallback = null; // eslint-disable-line
+    successCallback = null; // eslint-disable-line
+    errorCallback = null; // eslint-disable-line
     receiptTries = 0;
     constructor (params, pending, success, error) {
         // this.slot.transaction = this.generateTransaction(nonce, params);
@@ -59,7 +58,7 @@ class Slot {
     };
 };
 
-class TransactionManager extends EventEmitter {
+class TransactionManager {
     sending_queue = {};
     maxPending = 5;
     initSlot (fromAddress) {

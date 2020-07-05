@@ -1,7 +1,6 @@
 import Web3 from 'web3';
 import Tx from 'ethereumjs-tx';
 import config from '../../config/config';
-import { decrypt } from '../helpers/crypto';
 
 let web3;
 
@@ -25,7 +24,7 @@ const getTransactionCount = (address) => {
 };
 
 const getReceipt = (transactionHash) => {
-    return web3.eth.getTransactionReceipt(transactionHash)
+    return web3.eth.getTransactionReceipt(transactionHash);
 };
 
 const signTransaction = (txOptions, privateKey) => {
@@ -36,18 +35,16 @@ const signTransaction = (txOptions, privateKey) => {
     return `0x${serializedTx}`;
 };
 
-const transfer = (txOptions, encryptedPrivKey) => {
-    const decryptedPrivKey = "0x28777a5aa77c217e4a46ce53c0beb1cb588dc20d7dad1a02dd9d4d19b0e10fb0";//decrypt(params.privateKey);
-    const signedTx = signTransaction(txOptions, decryptedPrivKey);
-    return web3.eth.sendSignedTransaction(signedTx);
-};
+// const transfer = (txOptions, encryptedPrivKey) => {
+//     const signedTx = signTransaction(txOptions, decryptedPrivKey);
+//     return web3.eth.sendSignedTransaction(signedTx);
+// };
 
-init ();
+init();
 
 module.exports = {
     createAccount,
     getAllAccounts,
-    transfer,
     getTransactionCount,
     signTransaction,
     web3,

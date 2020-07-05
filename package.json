@@ -17,7 +17,6 @@
     "lint": "esw *.js server config --color",
     "lint:watch": "yarn lint -- --watch",
     "beautify": "es-beautifier -u -c .eslintrc.js *.js server config",
-    "precommit": "yarn lint && yarn test",
     "test": "cross-env NODE_ENV=test ./node_modules/.bin/mocha --ui bdd --reporter spec --colors --compilers js:babel-core/register server/tests/stress --recursive --timeout 150000",
     "test:watch": "yarn test -- --watch",
     "test:coverage": "cross-env NODE_ENV=test ./node_modules/.bin/istanbul cover _mocha -- --ui bdd --reporter spec --colors --compilers js:babel-core/register server/tests --recursive",

@@ -4,19 +4,6 @@ import { getReceipt } from '../lib/web3';
 
 const Transaction = db.Transaction;
 
-const generateBulkQuery = (transactions) => {
-    for (let i = 0; i < transactions.length; i++) {
-        getReceipt(transactions[i].statusDescription)
-            .then((receipt) => {
-                console.log(receipt);
-                if (receipt) {
-                    updateStatus(transactions[i], 'completed', JSON.stringify(receipt));
-                }
-            })
-            .catch(console.error);
-    }
-};
-
 const updateStatus = (transaction, status, statusDescription) => {
     return new Promise((resolve, reject) => {
         Transaction.findOne({ where: { id: transaction.id } })
@@ -30,21 +17,32 @@ const updateStatus = (transaction, status, statusDescription) => {
                         resolve(newTransaction);
                     })
                     .catch(reject);
-                } else {
-                    reject();
                 }
+                return reject();
             })
             .catch(reject);
     });
 };
 
+const generateBulkQuery = (transactions) => {
+    for (let i = 0; i < transactions.length; i += 1) {
+        getReceipt(transactions[i].statusDescription)
+            .then((receipt) => {
+                console.log(receipt);
+                if (receipt) {
+                    updateStatus(transactions[i], 'completed', JSON.stringify(receipt));
+                }
+            })
+            .catch(console.error);
+    }
+};
 
 const fetchTransactions = () => {
     return Transaction.findAll({
         where: {
-            status: 'pending'
+            status: 'pending',
         },
-        attributes: ['status', 'id', 'statusDescription']
+        attributes: ['status', 'id', 'statusDescription'],
     });
 };
 
@@ -57,7 +55,7 @@ const startProcessing = () => {
 };
 
 // Runs a task every minute
-const task = cron.schedule('* * * * *', function(){
+const task = cron.schedule('* * * * *', () => {
     fetchTransactions()
         .then((transactions) => {
             generateBulkQuery(transactions);

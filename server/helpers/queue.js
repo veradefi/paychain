@@ -1,6 +1,5 @@
 import kue from 'kue';
 import TransactionManager from './TransactionManager';
-import config from '../../config/config';
 
 const queue = kue.createQueue();
 const transactionManager = new TransactionManager();
@@ -15,10 +14,9 @@ const add = (queueType, transaction) => {
                     .create(queueType, transaction)
                     .priority('high')
                     .save();
-    // job.on('start', () => {
-    //     console.log('Queue job started', job.id);
-    //     // const t_data = job.data;
-    // });
+    job.on('start', () => {
+        console.log('Queue job started', job.id);
+    });
 
     // job.on('complete', (result) => {
     //     console.log('Job completed with data ');
@@ -43,9 +41,8 @@ const setStatus = (transaction, status, statusDescription, nonce) => {
                         resolve(newTransaction);
                     })
                     .catch(reject);
-                } else {
-                    reject();
                 }
+                return reject();
             })
             .catch(reject);
     });
@@ -66,7 +63,7 @@ const sendTransaction = (transaction, done) => {
             setStatus(transaction, 'pending', JSON.stringify(transactionHash), nonce).then(() => {
                 done(null, transactionHash);
             });
-        },(receipt) => {
+        }, (receipt) => {
             // console.log("receipt", JSON.stringify(receipt));
             setStatus(transaction, 'completed', JSON.stringify(receipt)).then(() => {
                 done(null, receipt);
@@ -84,7 +81,7 @@ const sendTransaction = (transaction, done) => {
 };
 
 const processQueue = () => {
-    console.log("processing queue");
+    console.log('processing queue');
     queue.process('transactions', (job, done) => {
         sendTransaction(job.data, done);
         // done();
