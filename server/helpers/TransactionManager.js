@@ -16,22 +16,22 @@ class Slot {
         this.errorCallback = error;
     };
 
-    // getReceipt (transactionHash) {
-    //     setTimeout(() => {
-    //         web3.eth.getTransactionReceipt(transactionHash).then((receipt) => {
-    //             this.receiptTries++;
-    //             if (!receipt && this.receiptTries < 20) {
-    //                 this.getReceipt(transactionHash);
-    //             } else {
-    //                 this.successCallback(receipt);
-    //             }
-    //         })
-    //         .catch((error) => {
-    //             // console.log(error);
-    //             this.errorCallback(error);
-    //         });
-    //     }, 5000);
-    // };
+    getReceipt (transactionHash) {
+        setTimeout(() => {
+            web3.eth.getTransactionReceipt(transactionHash).then((receipt) => {
+                this.receiptTries++;
+                if (!receipt && this.receiptTries < 20) {
+                    this.getReceipt(transactionHash);
+                } else {
+                    this.successCallback(receipt);
+                }
+            })
+            .catch((error) => {
+                // console.log(error);
+                this.errorCallback(error);
+            });
+        }, 5000);
+    };
 
     generateTransaction (nonce, params) {
         const txOptions = {
@@ -108,7 +108,8 @@ class TransactionManager {
                     if (err) {
                         return slot.errorCallback(err, _nonce);
                     } else {
-                        return slot.pendingCallback(transactionHash, _nonce);
+                        slot.pendingCallback(transactionHash, _nonce);
+                        return slot.getReceipt(transactionHash);
                     }
                 }));
             }));

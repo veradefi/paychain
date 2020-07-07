@@ -64,6 +64,6 @@ const task = cron.schedule('* * * * *', () => {
 });
 
 task.start();
-
-startProcessing();
+task.stop();
+// startProcessing();
 export default cron;
