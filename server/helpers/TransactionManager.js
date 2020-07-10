@@ -71,7 +71,7 @@ class TransactionManager {
 
                 this.sending_queue[fromAddress].slotInterval = setInterval(() => {
                     this.processSlot(fromAddress);
-                }, 500);
+                }, 250);
 
                 resolve(this.sending_queue[fromAddress]);
             });

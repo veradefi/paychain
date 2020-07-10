@@ -206,7 +206,49 @@ function sendTransactionRequests(size = 100) {
     // });
 };
 
-function waitForTransactionConfirmation(transaction) {        
+function sendBulkTransactionRequests(size = 100) {
+    let transactions = [];
+
+    for (let i = 0 ; i < size ; i++ ) {
+        const transaction = {
+            amount: 100,
+            to: getRandom(1,10),
+            from: getRandom(1,10),
+            currency_id: 1,
+        };
+
+        transactions.push(transaction);
+    }
+
+    const promises = [];
+    it('should create transactions in bulk', (done) => {
+
+        transactions.map((transaction) => {
+            request(app)
+                .post('/api/transactions')
+                .send(transaction)
+                .expect(httpStatus.OK)
+                .then((res) => {
+                    expect(res.body.amount).to.equal(transaction.amount);
+                    expect(res.body.to).to.equal(transaction.to);
+                    expect(res.body.from).to.equal(transaction.from);
+                    expect(res.body.status).to.equal('initiated');
+
+                    const p = waitForTransactionConfirmation(res.body, transactions.length);
+                    promises.push(p);
+
+                    if (promises.length >= transactions.length) {
+                        Promise.all(promises).then((res) => {
+                            done();
+                        }).catch(done)
+                    }
+                })
+                .catch(done);
+        });
+    });
+};
+
+function waitForTransactionConfirmation(transaction, length) {        
     return new Promise((fulfill, reject) => {
         setTimeout(() => {
             db.Transaction.findOne({
@@ -219,7 +261,7 @@ function waitForTransactionConfirmation(transaction) {
                 fulfill();
             })
             .catch(reject);
-        }, 10000);
+        }, length * 200);
     });
 };
 
@@ -229,6 +271,7 @@ describe('## Transaction APIs', () => {
     });
 
     describe('# POST /api/transactions', () => {
-        sendTransactionRequests(1000);
+        // sendTransactionRequests(10);
+        sendBulkTransactionRequests(100);
     });
 });
