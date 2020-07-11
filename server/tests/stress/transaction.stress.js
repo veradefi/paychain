@@ -7,7 +7,7 @@ import db from '../../../config/sequelize';
 import app from '../../../index';
 import BN from 'bn.js';
 import { getAllAccounts, web3 } from '../../lib/web3';
-
+const loadtest = require('loadtest');
 const jsonAccounts = require('../../json/accounts.json');
 const Token = require('../../../build/contracts/TestERC20.json');
 
@@ -128,12 +128,16 @@ describe('## Transaction stress tests', () => {
 });
 
 // function startLoadTesting(done){
+//     const promises = [];
+//     const maxRequests = 1000;
+//     const requestsPerSecond = 100;
+
 //     const options = {
 //         url: 'http://localhost:4000/api/transactions',
-//         maxRequests: 1,
+//         maxRequests: maxRequests,
 //         concurrency: 1,
 //         method: 'POST',
-//         requestsPerSecond: 1,
+//         requestsPerSecond: requestsPerSecond,
 //         headers: {
 //             'content-type': 'application/json'
 //         },
@@ -143,17 +147,25 @@ describe('## Transaction stress tests', () => {
 //             to: 2,
 //             from: 1,
 //             currency_id: 1,
+//         },
+//         statusCallback: (error, result, latency) => {
+//             const promise = waitForTransactionConfirmation(JSON.parse(result.body), maxRequests);
+//             promises.push(promise);
 //         }
 //     };
 
 //     loadtest.loadTest(options, function(error, result)
-//     {
+//     {   
 //         if (error)
 //         {
+//             done(error);
 //             return console.error('Got an error: %s', error);
 //         }
-//         console.log('Tests run successfully');
-//         done();
+
+//         Promise.all(promises).then((res) => {
+//             console.log('Tests run successfully');
+//             done();
+//         }).catch(done)
 //     });
 // }
 
@@ -176,54 +188,9 @@ function sendTransactionRequests(size = 100) {
     }
 
     const promises = [];
-    // it('should create transactions in bulk', (done) => {
 
-        transactions.map((transaction) => {
-            it('should create a transaction', (done) => {
-                request(app)
-                    .post('/api/transactions')
-                    .send(transaction)
-                    .expect(httpStatus.OK)
-                    .then((res) => {
-                        expect(res.body.amount).to.equal(transaction.amount);
-                        expect(res.body.to).to.equal(transaction.to);
-                        expect(res.body.from).to.equal(transaction.from);
-                        expect(res.body.status).to.equal('initiated');
-
-                        // const p = waitForTransactionConfirmation(res.body);
-                        // promises.push(p);
-
-                        // if (promises.length >= transactions.length) {
-                        //     Promise.all(promises).then((res) => {
-                        //         done();
-                        //     }).catch(done)
-                        // }
-                        done();
-                    })
-                    .catch(done);
-            });
-        });
-    // });
-};
-
-function sendBulkTransactionRequests(size = 100) {
-    let transactions = [];
-
-    for (let i = 0 ; i < size ; i++ ) {
-        const transaction = {
-            amount: 100,
-            to: getRandom(1,10),
-            from: getRandom(1,10),
-            currency_id: 1,
-        };
-
-        transactions.push(transaction);
-    }
-
-    const promises = [];
-    it('should create transactions in bulk', (done) => {
-
-        transactions.map((transaction) => {
+    transactions.map((transaction) => {
+        it('should create a transaction', (done) => {
             request(app)
                 .post('/api/transactions')
                 .send(transaction)
@@ -234,21 +201,57 @@ function sendBulkTransactionRequests(size = 100) {
                     expect(res.body.from).to.equal(transaction.from);
                     expect(res.body.status).to.equal('initiated');
 
-                    const p = waitForTransactionConfirmation(res.body, transactions.length);
-                    promises.push(p);
-
-                    if (promises.length >= transactions.length) {
-                        Promise.all(promises).then((res) => {
-                            done();
-                        }).catch(done)
-                    }
+                    all_transactions.push(res.body);
+                    done();
                 })
                 .catch(done);
         });
     });
 };
 
-function waitForTransactionConfirmation(transaction, length) {        
+// function sendBulkTransactionRequests(size = 100) {
+//     let transactions = [];
+
+//     for (let i = 0 ; i < size ; i++ ) {
+//         const transaction = {
+//             amount: 100,
+//             to: getRandom(1,10),
+//             from: getRandom(1,10),
+//             currency_id: 1,
+//         };
+
+//         transactions.push(transaction);
+//     }
+
+//     const promises = [];
+//     it('should create transactions in bulk', (done) => {
+
+//         transactions.map((transaction) => {
+//             request(app)
+//                 .post('/api/transactions')
+//                 .send(transaction)
+//                 .expect(httpStatus.OK)
+//                 .then((res) => {
+//                     expect(res.body.amount).to.equal(transaction.amount);
+//                     expect(res.body.to).to.equal(transaction.to);
+//                     expect(res.body.from).to.equal(transaction.from);
+//                     expect(res.body.status).to.equal('initiated');
+
+//                     const p = waitForTransactionConfirmation(res.body, transactions.length);
+//                     promises.push(p);
+
+//                     if (promises.length >= transactions.length) {
+//                         Promise.all(promises).then((res) => {
+//                             done();
+//                         }).catch(done)
+//                     }
+//                 })
+//                 .catch(done);
+//         });
+//     });
+// };
+
+function waitForTransactionConfirmation(transaction, length) { 
     return new Promise((fulfill, reject) => {
         setTimeout(() => {
             db.Transaction.findOne({
@@ -261,7 +264,7 @@ function waitForTransactionConfirmation(transaction, length) {
                 fulfill();
             })
             .catch(reject);
-        }, length * 200);
+        }, 100000);
     });
 };
 
@@ -271,7 +274,19 @@ describe('## Transaction APIs', () => {
     });
 
     describe('# POST /api/transactions', () => {
-        // sendTransactionRequests(10);
-        sendBulkTransactionRequests(100);
+        sendTransactionRequests(1000);
+
+        it('should wait for transaction confirmation', (done) => {
+            const promises = [];
+            for (let i = 0; i < all_transactions.length; i++) {
+                const promise = waitForTransactionConfirmation(all_transactions[i], all_transactions.length);
+                promises.push(promise);
+            }
+
+            Promise.all(promises).then(() => {
+                done();
+            })
+            .catch(done);
+        });
     });
 });

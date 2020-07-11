@@ -15,7 +15,7 @@ const add = (queueType, transaction) => {
                     .priority('high')
                     .save();
     job.on('start', () => {
-        console.log('Queue job started', job.id);
+        // console.log('Queue job started', job.id);
     });
 
     // job.on('complete', (result) => {
@@ -82,7 +82,7 @@ const sendTransaction = (transaction, done) => {
 
 const processQueue = () => {
     console.log('processing queue');
-    queue.process('transactions', (job, done) => {
+    queue.process('transactions', 20, (job, done) => {
         sendTransaction(job.data, done);
         // done();
     });
