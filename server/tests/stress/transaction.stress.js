@@ -90,18 +90,19 @@ describe('## Transaction stress tests', () => {
                     totalSupply = new BN(result);
                 })
                 .then(() => {
-                    const promises = [];
-                    for (let i = 1; i < accounts.length; i++) {
-                        const p = tokenContract.methods.transfer(accounts[i], totalSupply.div(new BN(10))).send({
-                            from: tokenOwner
-                        })
-                        promises.push(p);
-                    }
+                    done();
+                    // const promises = [];
+                    // for (let i = 1; i < accounts.length; i++) {
+                    //     const p = tokenContract.methods.transfer(accounts[i], totalSupply.div(new BN(10))).send({
+                    //         from: tokenOwner
+                    //     })
+                    //     promises.push(p);
+                    // }
 
-                    Promise.all(promises).then(() => {
-                      done();
-                    })
-                    .catch(done)
+                    // Promise.all(promises).then(() => {
+                    //   done();
+                    // })
+                    // .catch(done)
                 })
         });
     });
@@ -195,7 +196,7 @@ function sendTransactionRequests(size = 100) {
         const transaction = {
             amount: 100,
             to: getRandom(1,10),
-            from: getRandom(1,10),
+            from: 1,
             currency_id: 1,
         };
 
