@@ -117,12 +117,22 @@ describe('## Transaction stress tests', () => {
             };
 
             it('should create 10 api accounts', (done) => {
-                db.Account.create(account)
+                request(config.api_url)
+                    .post('/api/accounts')
+                    .send(account)
+                    .expect(httpStatus.OK)
                     .then((res) => {
                         apiAccounts.push(res.body);
                         done();
                     })
                     .catch(done);
+
+                // db.Account.create(account)
+                //     .then((res) => {
+                //         apiAccounts.push(res.body);
+                //         done();
+                //     })
+                //     .catch(done);
             });
         }
     });
@@ -265,7 +275,7 @@ function waitForTransactionConfirmation(transaction, length) {
                 fulfill();
             })
             .catch(reject);
-        }, 100000);
+        }, 30000);
     });
 };
 
@@ -275,7 +285,7 @@ describe('## Transaction APIs', () => {
     });
 
     describe('# POST /api/transactions', () => {
-        sendTransactionRequests(1000);
+        sendTransactionRequests(100);
 
         it('should wait for transaction confirmation', (done) => {
             const promises = [];

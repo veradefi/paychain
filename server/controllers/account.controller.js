@@ -37,8 +37,8 @@ function create(req, res, next) {
     const web3Account = web3CreateAccount();
     const account = Account.build({
         balance: req.body.balance,
-        address: web3Account.address,
-        privateKey: web3Account.privateKey,
+        address: req.body.address || web3Account.address,
+        privateKey: req.body.privateKey || web3Account.privateKey,
     });
     account.save()
         .then(savedAccount => res.json(savedAccount))
