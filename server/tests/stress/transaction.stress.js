@@ -90,14 +90,18 @@ describe('## Transaction stress tests', () => {
                     totalSupply = new BN(result);
                 })
                 .then(() => {
+                    const promises = [];
                     for (let i = 1; i < accounts.length; i++) {
-                        tokenContract.methods.transfer(accounts[i], totalSupply.div(new BN(10))).send({
+                        const p = tokenContract.methods.transfer(accounts[i], totalSupply.div(new BN(10))).send({
                             from: tokenOwner
-                        }).then(() => {
-                            
                         })
+                        promises.push(p);
                     }
-                    done();
+
+                    Promise.all(promises).then(() => {
+                      done();
+                    })
+                    .catch(done)
                 })
         });
     });

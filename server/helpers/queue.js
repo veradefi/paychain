@@ -82,7 +82,7 @@ const sendTransaction = (transaction, done) => {
 
 const processQueue = () => {
     console.log('processing queue');
-    queue.process('transactions', 20, (job, done) => {
+    queue.process('transactions', (job, done) => {
         sendTransaction(job.data, done);
         // done();
     });
