@@ -4,9 +4,10 @@ import request from 'supertest-as-promised';
 import httpStatus from 'http-status';
 import chai, { expect } from 'chai';
 import db from '../../../config/sequelize';
-import app from '../../../index';
+import config from '../../../config/config';
 import BN from 'bn.js';
 import { getAllAccounts, web3 } from '../../lib/web3';
+
 const loadtest = require('loadtest');
 const jsonAccounts = require('../../json/accounts.json');
 const Token = require('../../../build/contracts/TestERC20.json');
@@ -191,7 +192,7 @@ function sendTransactionRequests(size = 100) {
 
     transactions.map((transaction) => {
         it('should create a transaction', (done) => {
-            request(app)
+            request(config.api_url)
                 .post('/api/transactions')
                 .send(transaction)
                 .expect(httpStatus.OK)

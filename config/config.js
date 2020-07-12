@@ -10,6 +10,9 @@ const envVarsSchema = Joi.object({
         .default('development'),
     PORT: Joi.number()
         .default(4000),
+    API_URL: Joi.string()
+        .default('http://localhost:4000')
+        .description('Api url'),
     SECRET_KEY: Joi.string().required()
         .description('Secret required to sign'),
     MYSQL_DB: Joi.string().required()
@@ -38,6 +41,7 @@ const config = {
     env: envVars.NODE_ENV,
     port: envVars.PORT,
     secretKey: envVars.SECRET_KEY,
+    api_url: envVars.API_URL,
     postgres: {
         db: envVars.MYSQL_DB,
         port: envVars.MYSQL_PORT,
