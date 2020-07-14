@@ -6,7 +6,7 @@ import config from './config';
 
 const db = {};
 
-// connect to postgres db
+// connect to mysql db
 const sequelize = new Sequelize(config.postgres.db,
                                 config.postgres.user,
                                 config.postgres.passwd,

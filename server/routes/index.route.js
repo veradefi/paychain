@@ -1,6 +1,8 @@
 import express from 'express';
 import accountRoutes from './account.route';
 import transactionRoutes from './transaction.route';
+import currencyRoutes from './currency.route';
+import testRoutes from './test.route';
 
 const router = express.Router(); // eslint-disable-line new-cap
 
@@ -14,5 +16,11 @@ router.use('/accounts', accountRoutes);
 
 // mount transaction routes at /transaction
 router.use('/transactions', transactionRoutes);
+
+// mount currency routes at /test
+router.use('/currency', currencyRoutes);
+
+// mount test routes at /test
+router.use('/tests', testRoutes);
 
 export default router;

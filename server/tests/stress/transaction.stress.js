@@ -5,26 +5,23 @@ import httpStatus from 'http-status';
 import chai, { expect } from 'chai';
 import db from '../../../config/sequelize';
 import config from '../../../config/config';
-import BN from 'bn.js';
 import { getAllAccounts, web3 } from '../../lib/web3';
 
 const loadtest = require('loadtest');
 const jsonAccounts = require('../../json/accounts.json');
-const Token = require('../../../build/contracts/TestERC20.json');
 
 chai.config.includeStack = true;
 
-let accounts = [];
 const apiAccounts = [];
 const all_transactions = [];
-let tokenOwner;
-let tokenContract;
-let totalSupply = 0;
+let tokenContract = {
+
+};
 /**
  * root level hooks
  */
 before(() => {
-    db.sequelize.sync();
+
 });
 
 describe('## Transaction stress tests', () => {
@@ -34,76 +31,62 @@ describe('## Transaction stress tests', () => {
         });
 
         after((done) => {
-            db.Currency.findOne({
-                where: {
-                    symbol: 'DC',
-                }
-            })
-            .then((currency) => {
-                if (currency) {
-                    return currency.updateAttributes({
-                        address: tokenContract._address,
-                    })
-                    .then(() => {
-                        done();
-                    })
-                    .catch(done)
-                } else {
-                    db.Currency.create({
-                        symbol: 'DC',
-                        address: tokenContract._address,
-                        full_name: 'Dummy Coin',
-                        short_name: 'Dummy',
-                    })
-                    .then(() => {
-                        done()
-                    })
-                    .catch(done)
-                }
-            })
-        });
-
-        it('fetch all accounts', (done) => {
-            getAllAccounts().then((_accounts) => {
-                accounts = _accounts;
-                done();
-            });
-        });
-
-        it('deploy token', (done) => {
-            tokenOwner = accounts[0];
-            const ContractAbi = new web3.eth.Contract(Token.abi);
-            ContractAbi
-                .deploy({ data: Token.bytecode })
-                .send({
-                    from: tokenOwner,
-                    gas: 1500000,
-                    gasPrice: '3000000000',
-                })
-                .then((result) => {
-                    tokenContract = result;
-                    return tokenContract
-                              .methods
-                              .balanceOf(tokenOwner)
-                              .call({ from: tokenOwner });
-                }).then((result) => {
-                    totalSupply = new BN(result);
-                })
-                .then(() => {
+            const currency = {
+                address: tokenContract.address,
+            };
+            request(config.api_url)
+                .put(`/api/currency/1`)
+                .send(currency)
+                .expect(httpStatus.OK)
+                .then((res) => {
+                    expect(res.body.address).to.equal(tokenContract.address);
                     done();
-                    // const promises = [];
-                    // for (let i = 1; i < accounts.length; i++) {
-                    //     const p = tokenContract.methods.transfer(accounts[i], totalSupply.div(new BN(10))).send({
-                    //         from: tokenOwner
-                    //     })
-                    //     promises.push(p);
-                    // }
-
-                    // Promise.all(promises).then(() => {
-                    //   done();
-                    // })
-                    // .catch(done)
                 })
+                .catch(done);
+
+
+            // db.Currency.findOne({
+            //     where: {
+            //         symbol: 'DC',
+            //     }
+            // })
+            // .then((currency) => {
+            //     if (currency) {
+            //         return currency.updateAttributes({
+            //             address: tokenContract._address,
+            //         })
+            //         .then(() => {
+            //             done();
+            //         })
+            //         .catch(done)
+            //     } else {
+            //         db.Currency.create({
+            //             symbol: 'DC',
+            //             address: tokenContract._address,
+            //             full_name: 'Dummy Coin',
+            //             short_name: 'Dummy',
+            //         })
+            //         .then(() => {
+            //             done()
+            //         })
+            //         .catch(done)
+            //     }
+            // })
+        });
+
+        it('deploy token and init tests', (done) => {
+            request(config.api_url)
+                .post('/api/tests/init')
+                .expect(httpStatus.OK)
+                .then((res) => {
+                    expect(res.body.success).to.equal(true);
+                    expect(res.body.accounts).to.have.lengthOf(10);
+
+                    tokenContract.accounts = res.body.accounts;
+                    tokenContract.address = res.body.contractAddress;
+                    done();
+                })
+                .catch(done);
         });
     });
 
@@ -131,13 +114,6 @@ describe('## Transaction stress tests', () => {
                         done();
                     })
                     .catch(done);
-
-                // db.Account.create(account)
-                //     .then((res) => {
-                //         apiAccounts.push(res.body);
-                //         done();
-                //     })
-                //     .catch(done);
             });
         }
     });
@@ -270,16 +246,16 @@ function sendTransactionRequests(size = 100) {
 function waitForTransactionConfirmation(transaction, length) { 
     return new Promise((fulfill, reject) => {
         setTimeout(() => {
-            db.Transaction.findOne({
-                where: {
-                    id: transaction.id
-                }
-            })
-            .then((res) => {
-                expect(res.status).to.be.oneOf(['pending','completed']);
-                fulfill();
-            })
-            .catch(reject);
+            request(config.api_url)
+                .get(`/api/transactions/${transaction.id}`)
+                .expect(httpStatus.OK)
+                .then((res) => {
+                    expect(res.body.to).to.equal(transaction.to);
+                    expect(res.body.from).to.equal(transaction.from);
+                    expect(res.body.status).to.be.oneOf(['pending', 'completed']);
+                    fulfill();
+                })
+                .catch(reject);
         }, 30000);
     });
 };
