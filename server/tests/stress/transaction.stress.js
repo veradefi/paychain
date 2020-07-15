@@ -3,7 +3,6 @@
 import request from 'supertest-as-promised';
 import httpStatus from 'http-status';
 import chai, { expect } from 'chai';
-import db from '../../../config/sequelize';
 import config from '../../../config/config';
 import { getAllAccounts, web3 } from '../../lib/web3';
 
@@ -76,7 +75,7 @@ describe('## Transaction stress tests', () => {
 
         it('deploy token and init tests', (done) => {
             request(config.api_url)
-                .post('/api/tests/init')
+                .post('/tests/init')
                 .expect(httpStatus.OK)
                 .then((res) => {
                     expect(res.body.success).to.equal(true);
@@ -266,7 +265,7 @@ describe('## Transaction APIs', () => {
     });
 
     describe('# POST /api/transactions', () => {
-        sendTransactionRequests(100);
+        sendTransactionRequests(config.test.tx_per_sec);
 
         it('should wait for transaction confirmation', (done) => {
             const promises = [];

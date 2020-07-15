@@ -29,6 +29,8 @@ const envVarsSchema = Joi.object({
         .default('http://localhost:8545'),
     ENTROPY: Joi.string()
         .default('54674321§3456764321§345674321§3453647544±±±§±±±!!!43534534534534'),
+    TX_PER_SEC: Joi.number()
+        .default(100),
 }).unknown()
     .required();
 
@@ -52,6 +54,9 @@ const config = {
     web3: {
         provider_url: envVars.PROVIDER_URL,
         entropy: envVars.ENTROPY,
+    },
+    test: {
+        tx_per_sex: envVars.TX_PER_SEC,
     },
 };
 

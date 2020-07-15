@@ -1,30 +1,84 @@
 import httpStatus from 'http-status';
 import BN from 'bn.js';
-
-const { spawn } = require('child_process');
-const bash = spawn('bash');
-
-const Token = require('../../../build/contracts/TestERC20.json');
+import path from 'path';
+import { spawn} from 'child_process';
+import Mocha from 'mocha';
+import fs from 'fs';
+import io from '../../config/socket';
+import config from '../../config/config';
+import Token from '../../../build/contracts/TestERC20.json';
 import { getAllAccounts, web3 } from '../lib/web3';
 
+const bash = spawn('bash');
+
+// Instantiate a Mocha instance.
+const mocha = new Mocha({
+    ui: 'bdd',
+    reporter: 'min',
+    useColors: false,
+    timeout: 150000,
+});
+
+const testDir = path.join(__dirname, '../tests/stress');
+
+// Add each .js file to the mocha instance
+fs.readdirSync(testDir).filter(function(file){
+    // Only keep the .js files
+    return file.substr(-3) === '.js';
+
+}).forEach(function(file){
+    mocha.addFile(
+        path.join(testDir, file)
+    );
+});
+
+function index(req, res, next) {
+    return res.sendFile(path.join(__dirname, '../public/index.html'));
+}
 /**
  * Start test cases
  * @returns {Account}
  */
 function start(req, res, next) {
-    bash.stdin.write('npm run test\n');
-    bash.stdin.end();
-
-    bash.stdout.on('data', (data) => {
-      console.log(`child stdout:\n${data}`);
+    // Run the tests.
+    const testCases = [];
+    config.test.tx_per_sec = req.body.tx_per_sec || 100;
+    const testRun = mocha.run(function(failures){
+        process.exitCode = failures ? -1 : 0;
     });
 
-    bash.stderr.on('data', (data) => {
-       console.error(`child stderr:\n${data}`);
+    testRun.on('start', () => {
+        io.emit('tests started');
     });
 
-    bash.on('exit', function (code) {
-        console.log('child process exited with code ' + code);
+    testRun.on('end', () => {
+        io.emit('tests finished');
+    });
+
+    testRun.on('pass', (test) => {
+        const testResult = {
+            success: true,
+            title: test.title,
+            id: testCases.length + 1,
+        };
+
+        io.emit('test result', testResult);
+        testCases.push(testResult);
+    });
+
+    testRun.on('fail', (test, error) => {
+        const testResult = {
+            success: false,
+            title: test.title,
+            id: testCases.length + 1,
+        };
+
+        io.emit('test result', testResult);
+        testCases.push(testResult);
+    });
+
+    return res.json({
+        success: true,
     });
 }
 
@@ -77,4 +131,4 @@ function init(req, res, next) {
         });
 }
 
-export default { start, init };
+export default { index, start, init };

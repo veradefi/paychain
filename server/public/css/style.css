@@ -1,0 +1,67 @@
+body{
+  margin: 0;
+  letter-spacing: 0.5px;
+  background-color: #F0F4FA;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+.navbar{
+  color: #fff !important;
+  background: #292a47 !important;
+}
+a.navbar-brand{
+  color: #fff !important;
+  font-size: 2.25rem;
+}
+.table th{
+  padding: 2rem 1rem;
+}
+.table td{
+  padding: 1rem;
+}
+.table th{
+  border-top: 0px;
+}
+.table tbody tr:hover{
+  box-shadow: 0 0 25px 0 rgba(125,138,159,.5);
+  background-color: #f5f7fa;
+}
+.table tbody tr{
+  transition: all 0.2s ease;
+}
+.t-c{
+  text-align: center;
+}
+#table-container{
+  margin-bottom: 5rem;
+  margin-top: 5rem;
+  transition: all 1s ease-in;
+}
+.card{
+  border-radius: 0.65rem;
+  box-shadow: 0 2px 100px 0 rgba(0,0,0,.1)!important;
+}
+.btn{
+  border-radius: 30px;
+  box-shadow: 0 2px 100px 0 rgba(0,0,0,.1)!important;
+}
+.v-c{
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+}
+#form-card{
+  margin: auto;
+  width: 28%;
+  padding: 3rem 3rem;
+  transition: all 0.5s ease-out;
+}
+.visible{
+  visibility: visible;
+  opacity: 1
+}
+.hidden{
+  visibility: hidden;
+  opacity: 0;
+}

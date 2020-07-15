@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Chainpay</title>
+    <link rel="stylesheet" href="./css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="./css/style.css">
+    <script src="./js/jquery-3.3.1.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
+</head>
+  <body>
+    <header>
+      <nav class="navbar">
+        <a class="navbar-brand" href="#">
+          Test cases
+        </a>
+      </nav>
+    </header>
+    <div class="container">
+      <section>
+        <div class="card v-c" id="form-card">
+          <div class="card-body">
+            <h3 class="t-c">Start Testcases</h3>
+            <p>Start testcases by entering tx/s and pressing Start button
+            </p>
+            <form class="form" id="form">
+              <div class="form-group">
+<!--                 <label>Enter tx/s</label>
+ -->                <input type="text" class="form-control w-100" id="input" placeholder="Enter tx/s">
+              </div>
+              <button class="btn btn-primary w-100" id="fetchData"><span>Start</span></button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <section id="table-container" class="hidden">
+        <h2>Testcases progress</h2>
+        <div class="d-flex justify-content-between align-items-center pt-2 pb-2">
+          <div><b>Testcases Count: 10/100</b></div>
+        </div>
+        <div class="card">
+          <div class="t-c">
+            <table class="table" id="table">
+              <thead>
+                <tr>
+                  <th scope="col">Id</th>
+                  <th scope="col">Title</th>
+                  <th scope="col">Success</th>
+                </tr>
+              </thead>
+              <tbody>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </div>
+    <script type="text/javascript" src="./js/app.js"></script>
+    
+  </body>
+</html>

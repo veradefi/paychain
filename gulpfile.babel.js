@@ -10,6 +10,8 @@ const paths = {
     js: ['./**/*.js', '!dist/**', '!node_modules/**', '!coverage/**'],
     nonJs: ['./package.json', './.gitignore', './.env'],
     tests: './server/tests/*.js',
+    public: ['./server/public/**/*.html', './server/public/**/*.css'],
+    json: ['./server/json/*.json']
 };
 
 // Clean up dist and coverage directory
@@ -22,6 +24,18 @@ gulp.task('copy', () =>
     gulp.src(paths.nonJs)
         .pipe(plugins.newer('dist'))
         .pipe(gulp.dest('dist'))
+);
+
+// Copy html and css files to dist/server/public
+gulp.task('copy-public', () =>
+    gulp.src(paths.public)
+        .pipe(gulp.dest('dist/server/public'))
+);
+
+// Copy html and css files to dist/server/public
+gulp.task('copy-json', () =>
+    gulp.src(paths.json)
+        .pipe(gulp.dest('dist/server/json'))
 );
 
 // Compile ES6 to ES5 and copy to dist
@@ -40,12 +54,12 @@ gulp.task('babel', () =>
 );
 
 // Start server with restart on file changes
-gulp.task('nodemon', ['copy', 'babel'], () =>
+gulp.task('nodemon', ['copy', 'copy-public', 'copy-json', 'babel'], () =>
     plugins.nodemon({
         script: path.join('dist', 'index.js'),
         ext: 'js',
         ignore: ['node_modules/**/*.js', 'dist/**/*.js'],
-        tasks: ['copy', 'babel'],
+        tasks: ['copy', 'copy-public', 'copy-json', 'babel'],
     })
 );
 
@@ -55,6 +69,6 @@ gulp.task('serve', ['clean'], () => runSequence('nodemon'));
 // default task: clean dist, compile js files and copy non-js files.
 gulp.task('default', ['clean'], () => {
     runSequence(
-        ['copy', 'babel']
+        ['copy', 'copy-public', 'copy-json', 'babel']
     );
 });

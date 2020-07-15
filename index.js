@@ -1,5 +1,6 @@
 import config from './config/config';
 import app from './config/express';
+import io from './config/socket';
 /* eslint-disable no-unused-vars */
 import db from './config/sequelize';
 import cron from './server/helpers/cronjob';

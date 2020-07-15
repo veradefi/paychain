@@ -53,6 +53,7 @@
     "node-cron": "^1.2.1",
     "run-sequence": "^1.1.5",
     "sequelize": "^4.37.10",
+    "socket.io": "^2.1.1",
     "supertest": "2.0.1",
     "supertest-as-promised": "4.0.2",
     "web3": "^1.0.0-beta.34",
