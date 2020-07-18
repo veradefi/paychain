@@ -33,6 +33,12 @@ const envVarsSchema = Joi.object({
         .default(100),
     QUEUE_NAME: Joi.string()
         .default('transactions'),
+    QUEUE_HOST: Joi.string()
+        .default('127.0.0.1'),
+    QUEUE_PORT: Joi.number()
+        .default(6379),
+    QUEUE_PWD: Joi.string().allow('')
+        .default(''),
 }).unknown()
     .required();
 
@@ -48,6 +54,9 @@ const config = {
     api_url: envVars.API_URL,
     queue: {
         name: envVars.QUEUE_NAME,
+        port: envVars.QUEUE_PORT,
+        host: envVars.QUEUE_HOST,
+        password: envVars.QUEUE_PWD,
     },
     postgres: {
         db: envVars.MYSQL_DB,

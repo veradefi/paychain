@@ -3,7 +3,15 @@ import config from '../../config/config'
 import TransactionManager from './TransactionManager';
 import { shouldRetry } from './helpers';
 
-const queue = kue.createQueue();
+const queue = kue.createQueue({
+  prefix: 'q',
+  redis: {
+    port: config.queue.port,
+    host: config.queue.host,
+    auth: config.queue.password,
+  },
+});
+
 const transactionManager = new TransactionManager();
 
 let Model;
@@ -17,7 +25,7 @@ const add = (queueType, transaction) => {
                     .priority('high')
                     .save();
     job.on('start', () => {
-        // console.log('Queue job started', job.id);
+        console.log('Queue job started', job.id);
     });
 
     // job.on('complete', (result) => {
