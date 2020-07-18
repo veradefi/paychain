@@ -1,5 +1,6 @@
 import kue from 'kue';
 import TransactionManager from './TransactionManager';
+import { shouldRetry } from './helpers';
 
 const queue = kue.createQueue();
 const transactionManager = new TransactionManager();
@@ -69,10 +70,11 @@ const sendTransaction = (transaction, done) => {
                 done(null, receipt);
             });
         }, (error, nonce) => {
-            // console.log(error.toString());
             setStatus(transaction, 'failed', error.toString(), nonce).then(() => {
                 done(error);
-                add('transactions', transaction);
+                if (shouldRetry(error)) {
+                  add('transactions', transaction);
+                }
             });
         });
         done(null, transaction);
@@ -84,7 +86,6 @@ const processQueue = () => {
     console.log('processing queue');
     queue.process('transactions', (job, done) => {
         sendTransaction(job.data, done);
-        // done();
     });
 };
 

@@ -9,7 +9,6 @@ class Slot {
     errorCallback = null; // eslint-disable-line
     receiptTries = 0;
     constructor (params, pending, success, error) {
-        // this.slot.transaction = this.generateTransaction(nonce, params);
         this.params = params;
         this.pendingCallback = pending;
         this.successCallback = success;
@@ -61,6 +60,7 @@ class Slot {
 class TransactionManager {
     sending_queue = {};
     maxPending = 5;
+
     initSlot (fromAddress) {
         return new Promise((resolve, reject) => {
             getTransactionCount(fromAddress)
@@ -71,7 +71,7 @@ class TransactionManager {
 
                 this.sending_queue[fromAddress].slotInterval = setInterval(() => {
                     this.processSlot(fromAddress);
-                }, 250);
+                }, 1000);
 
                 resolve(this.sending_queue[fromAddress]);
             });
@@ -81,6 +81,7 @@ class TransactionManager {
     addToSlot (fromAddress, params, pending, success, error) {
         const slot = new Slot(params, pending, success, error);
         this.sending_queue[fromAddress].slots.push(slot);
+
         if (this.sending_queue[fromAddress].slots.length >= this.maxPending) {
             this.processSlot(fromAddress);
         }
@@ -101,7 +102,7 @@ class TransactionManager {
 
             Promise.all(slots.map((slot, index) => {
                 const _nonce = nonce + index;
-                slot.transaction = slot.generateTransaction(nonce + index, slot.params);
+                slot.transaction = slot.generateTransaction(_nonce, slot.params);
                 const decryptedPrivKey = decrypt(slot.params.privateKey);
                 const signedTx = signTransaction(slot.transaction, decryptedPrivKey);
                 batch.add(web3.eth.sendSignedTransaction.request(signedTx, 'receipt', (err, transactionHash) => {
