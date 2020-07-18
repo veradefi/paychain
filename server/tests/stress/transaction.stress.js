@@ -171,7 +171,7 @@ function sendTransactionRequests(size = 100) {
         const transaction = {
             amount: 100,
             to: getRandom(1,10),
-            from: 1,
+            from: getRandom(1,10),
             currency_id: 1,
         };
 
