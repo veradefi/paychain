@@ -39,6 +39,8 @@ const envVarsSchema = Joi.object({
         .default(6379),
     QUEUE_PWD: Joi.string().allow('')
         .default(''),
+    SOCKET_PORT: Joi.number()
+        .default(1337),
 }).unknown()
     .required();
 
@@ -50,6 +52,7 @@ if (error) {
 const config = {
     env: envVars.NODE_ENV,
     port: envVars.PORT,
+    socket_port: envVars.SOCKET_PORT,
     secretKey: envVars.SECRET_KEY,
     api_url: envVars.API_URL,
     queue: {
