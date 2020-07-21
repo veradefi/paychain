@@ -25,10 +25,17 @@ describe('## Transaction stress tests', () => {
 
         after((done) => {
             const currency = {
-                address: tokenContract.address,
+                query: {
+                    symbol: 'DC',
+                },
+                update: {
+                    address: tokenContract.address,
+                    full_name: 'Dummy Coin',
+                    short_name: 'Dummy',
+                }
             };
             request(config.api_url)
-                .put(`/api/currency/1`)
+                .post(`/api/currency/upsert`)
                 .send(currency)
                 .expect(httpStatus.OK)
                 .then((res) => {
@@ -36,35 +43,6 @@ describe('## Transaction stress tests', () => {
                     done();
                 })
                 .catch(done);
-
-
-            // db.Currency.findOne({
-            //     where: {
-            //         symbol: 'DC',
-            //     }
-            // })
-            // .then((currency) => {
-            //     if (currency) {
-            //         return currency.updateAttributes({
-            //             address: tokenContract._address,
-            //         })
-            //         .then(() => {
-            //             done();
-            //         })
-            //         .catch(done)
-            //     } else {
-            //         db.Currency.create({
-            //             symbol: 'DC',
-            //             address: tokenContract._address,
-            //             full_name: 'Dummy Coin',
-            //             short_name: 'Dummy',
-            //         })
-            //         .then(() => {
-            //             done()
-            //         })
-            //         .catch(done)
-            //     }
-            // })
         });
 
         it('deploy token and init tests', (done) => {

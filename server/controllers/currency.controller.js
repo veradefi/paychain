@@ -58,4 +58,25 @@ function update(req, res, next) {
         .catch(e => next(e));
 }
 
-export default { load, get, create, update };
+function updateOrCreate(req, res, next){
+    const query = req.body.query || {};
+    const update = req.body.update;
+
+    Currency.findOne({
+        where: query,
+    })
+    .then((currency) => {
+        if (currency) {
+            return currency.updateAttributes(update)
+            .then(savedCurrency => res.json(savedCurrency))
+            .catch(e => next(e))
+        } else {
+            const upsert = {...query, ...update};
+            Currency.create(upsert)
+            .then(savedCurrency => res.json(savedCurrency))
+            .catch(e => next(e))
+        }
+    })
+};
+
+export default { load, get, create, update, updateOrCreate };

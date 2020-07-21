@@ -25,6 +25,10 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.TEXT,
             allowNull: true,
         },
+        transactionHash: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
         application_id: {
             type: DataTypes.STRING,
             allowNull: true,

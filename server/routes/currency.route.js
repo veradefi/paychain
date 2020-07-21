@@ -8,6 +8,11 @@ router.route('/')
     /** POST /api/currency - Create new currency */
     .post(currencyCtrl.create);
 
+router.route('/upsert')
+
+    /** POST /api/currency/upsert - Create or update new currency */
+    .post(currencyCtrl.updateOrCreate);
+
 router.route('/:currencyId')
 
     /** GET /api/currency/:currencyId - Get currency */

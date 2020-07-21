@@ -37,16 +37,14 @@ const add = (queueType, transaction) => {
     // });
 };
 
-const setStatus = (transaction, status, statusDescription, nonce) => {
+const setStatus = (transaction, status, params) => {
     return new Promise((resolve, reject) => {
         Model.findOne({ where: { id: transaction.id } })
             .then((newTransaction) => {
                 if (newTransaction) {
-                    return newTransaction.updateAttributes({
-                        status,
-                        statusDescription,
-                        store_id: nonce,
-                    })
+                    params = params || {};
+                    params.status = status;
+                    return newTransaction.updateAttributes(params)
                     .then(() => {
                         resolve(newTransaction);
                     })
@@ -70,16 +68,22 @@ const sendTransaction = (transaction, done) => {
     return setStatus(transaction, 'committed').then(() => {
         transactionManager.addTransaction(params, (transactionHash, nonce) => {
             // console.log("transactionHash", JSON.stringify(transactionHash));
-            setStatus(transaction, 'pending', JSON.stringify(transactionHash), nonce).then(() => {
+            setStatus(transaction, 'pending', {
+                transactionHash: JSON.stringify(transactionHash),
+            }).then(() => {
                 done(null, transactionHash);
             });
         }, (receipt) => {
             // console.log("receipt", JSON.stringify(receipt));
-            setStatus(transaction, 'completed', JSON.stringify(receipt)).then(() => {
+            setStatus(transaction, 'completed', {
+                statusDescription: JSON.stringify(receipt),
+            }).then(() => {
                 done(null, receipt);
             });
         }, (error, nonce) => {
-            setStatus(transaction, 'failed', error.toString(), nonce).then(() => {
+            setStatus(transaction, 'failed', {
+                statusDescription: error.toString()
+            }).then(() => {
                 done(error);
                 if (shouldRetry(error)) {
                   add(config.queue.name, transaction);
