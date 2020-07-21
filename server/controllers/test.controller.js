@@ -122,6 +122,12 @@ function init(req, res, next) {
                         });
                     })
                 })
+                .catch((err) => {
+                    res.json({
+                        success: false,
+                        error: err.toString(),
+                    });
+                })
         })
         .catch((err) => {
             res.json({
