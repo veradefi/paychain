@@ -46,7 +46,7 @@ $(document).ready(function() {
   }
 
   function init() {
-    var socket = io.connect(window.location.protocol + '//' + window.location.hostname + ':8080');
+    var socket = io.connect(window.location.protocol + '//' + window.location.hostname + ':1334');
     socket.on('test result', function (data) {
       addMoreData(data);
     });
