@@ -1,36 +1,12 @@
 import httpStatus from 'http-status';
 import BN from 'bn.js';
 import path from 'path';
-import { spawn} from 'child_process';
 import Mocha from 'mocha';
 import fs from 'fs';
 import io from '../../config/socket';
 import config from '../../config/config';
 import Token from '../../../build/contracts/TestERC20.json';
 import { getAllAccounts, web3 } from '../lib/web3';
-
-const bash = spawn('bash');
-
-// Instantiate a Mocha instance.
-const mocha = new Mocha({
-    ui: 'bdd',
-    reporter: 'min',
-    useColors: false,
-    timeout: 150000,
-});
-
-const testDir = path.join(__dirname, '../tests/stress');
-
-// Add each .js file to the mocha instance
-fs.readdirSync(testDir).filter(function(file){
-    // Only keep the .js files
-    return file.substr(-3) === '.js';
-
-}).forEach(function(file){
-    mocha.addFile(
-        path.join(testDir, file)
-    );
-});
 
 function index(req, res, next) {
     return res.sendFile(path.join(__dirname, '../public/index.html'));
@@ -43,6 +19,28 @@ function start(req, res, next) {
     // Run the tests.
     const testCases = [];
     config.test.tx_per_sec = req.body.tx_per_sec || 100;
+
+    // Instantiate a Mocha instance.
+    const mocha = new Mocha({
+        ui: 'bdd',
+        reporter: 'min',
+        useColors: false,
+        timeout: 150000,
+    });
+
+    const testDir = path.join(__dirname, '../tests/stress');
+
+    // Add each .js file to the mocha instance
+    const files = fs.readdirSync(testDir).filter(function(file){
+        // Only keep the .js files
+        return file.substr(-3) === '.js';
+
+    }).forEach(function(file){
+        const _sPathSpec = path.join(testDir, file);
+        delete require.cache[ _sPathSpec ];
+        mocha.addFile(_sPathSpec);
+    });
+
     const testRun = mocha.run(function(failures){
         process.exitCode = failures ? -1 : 0;
     });
@@ -53,6 +51,7 @@ function start(req, res, next) {
 
     testRun.on('end', () => {
         io.emit('tests finished');
+        testRun.removeAllListeners();
     });
 
     testRun.on('pass', (test) => {
@@ -122,24 +121,15 @@ function init(req, res, next) {
                         });
                     })
                     .catch((err) => {
-                        res.status(500).json({
-                            success: false,
-                            error: err.toString(),
-                        });
+                        next(err)
                     })
                 })
                 .catch((err) => {
-                    res.status(500).json({
-                        success: false,
-                        error: err.toString(),
-                    });
+                    next(err)
                 })
         })
         .catch((err) => {
-            res.status(500).json({
-                success: false,
-                error: err.toString(),
-            });
+            next(err)
         });
 }
 

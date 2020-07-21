@@ -53,6 +53,10 @@ $(document).ready(function() {
   }
 
   $('#fetchData').on('click', startTestCases);
+  $('#restartBtn').on('click', function(){
+    window.location.reload();
+  });
+
   $('#addMore').on( 'click', function () {
       addMoreData(data);
   });

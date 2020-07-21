@@ -16,12 +16,6 @@ const all_transactions = [];
 let tokenContract = {
 
 };
-/**
- * root level hooks
- */
-before(() => {
-
-});
 
 describe('## Transaction stress tests', () => {
     describe('# Deploy token and balance transfer', () => {
