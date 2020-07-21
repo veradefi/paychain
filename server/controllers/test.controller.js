@@ -11,6 +11,10 @@ import { getAllAccounts, web3 } from '../lib/web3';
 function index(req, res, next) {
     return res.sendFile(path.join(__dirname, '../public/index.html'));
 }
+
+function transactions(req, res, next) {
+    return res.sendFile(path.join(__dirname, '../public/transaction.html'));
+}
 /**
  * Start test cases
  * @returns {Account}
@@ -141,4 +145,4 @@ function init(req, res, next) {
         });
 }
 
-export default { index, start, init };
+export default { index, transactions, start, init };

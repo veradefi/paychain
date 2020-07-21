@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Chainpay</title>
+    <link rel="stylesheet" href="./css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="./css/style.css">
+    <script src="./js/jquery-3.3.1.min.js"></script>
+</head>
+  <body>
+    <header>
+      <nav class="navbar">
+        <a class="navbar-brand" href="#">
+          Test cases
+        </a>
+      </nav>
+    </header>
+    <div class="container">
+      <section id="table-container">
+        <div class="d-flex justify-content-between align-items-center pt-2 pb-2">
+          <h2>
+            Transactions
+          </h2>
+          <button class="btn btn-primary" id="refreshBtn">Reload</button>
+        </div>
+        <div class="d-flex justify-content-between align-items-center pt-2 pb-2">
+          <!-- <div><b>Testcases Count: 10/100</b></div> -->
+        </div>
+        <div class="card">
+          <div class="t-c">
+            <table class="table" id="table">
+              <thead>
+                <tr>
+                  <th scope="col">Id</th>
+                  <th scope="col">From</th>
+                  <th scope="col">To</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Hash</th>
+                </tr>
+              </thead>
+              <tbody>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <button class="btn btn-primary" id="loadMoreBtn">Load more</button>
+      </section>
+    </div>
+    <script type="text/javascript" src="./js/transaction.js"></script>
+    
+  </body>
+</html>

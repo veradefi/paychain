@@ -33,8 +33,15 @@ function get(req, res) {
  * @returns [Transaction]
  */
 function search(req, res, next) {
-    const { limit = 50 } = req.query;
-    Transaction.findAll({ limit })
+    const offset = parseInt(req.query.offset) || 0;
+    const limit  = parseInt(req.query.limit) || 50;
+    Transaction.findAll({ limit, offset,
+          include: [
+              { model: db.Account, as: 'fromAcc'},
+              { model: db.Account, as: 'toAcc'},
+              { model: db.Currency, as: 'currency'}
+          ]
+        })
         .then(transactions => res.json(transactions))
         .catch(e => next(e));
 }
