@@ -103,7 +103,11 @@ function init(req, res, next) {
                               .methods
                               .balanceOf(tokenOwner)
                               .call({ from: tokenOwner });
-                }).then((result) => {
+                })
+                .catch((err) => {
+                    console.error(err);
+                })
+                .then((result) => {
                     result = new BN(result);
                     const promises = [];
                     for (let i = 1; i < accounts.length; i++) {
