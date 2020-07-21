@@ -1,5 +1,6 @@
 
 import { add as addToQueue, setModel } from '../helpers/queue';
+import async from 'async';
 /**
  * Transaction Schema
  */
@@ -38,6 +39,67 @@ module.exports = (sequelize, DataTypes) => {
         },
     }, {
         hooks: {
+            beforeCreate: function(transaction, options) {
+                async.parallel([
+                    (callback) => {
+                        sequelize.models.Account.findOne({
+                            where: {
+                                id: transaction.from,
+                            },
+                        })
+                        .then(fromAcc => {
+                            if (!fromAcc) {
+                                callback(new Error("From account does not exist"))
+                            } else {
+                                callback(null);
+                            }
+                        })
+                        .catch(err => {
+                            callback(err);
+                        });
+                    },
+                    (callback) => {
+                        sequelize.models.Account.findOne({
+                            where: {
+                                id: transaction.to,
+                            },
+                        })
+                        .then(toAcc => {
+                            if (!toAcc) {
+                                callback(new Error("To account does not exist"))
+                            } else {
+                                callback(null);
+                            }
+                        })
+                        .catch(err => {
+                            callback(err);
+                        });
+                    },
+                    (callback) => {
+                        sequelize.models.Currency.findOne({
+                            where: {
+                                id: transaction.currency_id,
+                            },
+                        })
+                        .then(currency => {
+                            if (!currency) {
+                                callback(new Error("Currency does not exist"))
+                            } else {
+                                callback(null);
+                            }
+                        })
+                        .catch(err => {
+                            callback(err);
+                        });
+                    }
+                ],
+                    (err, results) => {
+                        if (err) {
+                            throw err;
+                        }
+                    }
+                );
+            },
             afterCreate: function(transaction, options) {
                 sequelize.models.Transaction.findOne({
                     where: {
