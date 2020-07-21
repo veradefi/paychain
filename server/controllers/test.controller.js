@@ -121,16 +121,22 @@ function init(req, res, next) {
                             contractAddress: tokenContract._address,
                         });
                     })
+                    .catch((err) => {
+                        res.status(500).json({
+                            success: false,
+                            error: err.toString(),
+                        });
+                    })
                 })
                 .catch((err) => {
-                    res.json({
+                    res.status(500).json({
                         success: false,
                         error: err.toString(),
                     });
                 })
         })
         .catch((err) => {
-            res.json({
+            res.status(500).json({
                 success: false,
                 error: err.toString(),
             });
