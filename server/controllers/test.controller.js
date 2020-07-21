@@ -125,15 +125,19 @@ function init(req, res, next) {
                         });
                     })
                     .catch((err) => {
-                        next(err)
+                        res.json({
+                            success: true,
+                            accounts: accounts,
+                            contractAddress: tokenContract._address,
+                        });
                     })
                 })
                 .catch((err) => {
-                    next(err)
+                    next(err);
                 })
         })
         .catch((err) => {
-            next(err)
+            next(err);
         });
 }
 
