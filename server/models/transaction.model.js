@@ -1,6 +1,7 @@
 
 import { add as addToQueue, setModel } from '../helpers/queue';
 import async from 'async';
+import BN from 'bn.js';
 /**
  * Transaction Schema
  */
@@ -126,7 +127,26 @@ module.exports = (sequelize, DataTypes) => {
                     ],
                 })
                 .then(newTransaction => {
-                    addToQueue('transactions', newTransaction);
+                    sequelize.transaction((t) => {
+                        let fromBalance = new BN(newTransaction.fromAcc.balance);
+                        fromBalance = fromBalance.sub(new BN(newTransaction.amount));
+                        return newTransaction.fromAcc.updateAttributes({
+                            balance: fromBalance.toString(),
+                        })
+                        .then(() => {
+                            let toBalance = new BN(newTransaction.toAcc.balance);
+                            toBalance = toBalance.add(new BN(newTransaction.amount));
+                            return newTransaction.toAcc.updateAttributes({
+                                balance: toBalance.toString(),
+                            });
+                        });
+                    })
+                    .then((result) => {
+                        addToQueue('transactions', newTransaction);
+                    })
+                    .catch((err) => {
+                        throw err;
+                    });
                 });
             },
         }

@@ -1,11 +1,12 @@
 import { encrypt } from '../helpers/crypto';
+import { getBalance } from '../lib/web3';
 /**
  * Account Schema
  */
 module.exports = (sequelize, DataTypes) => {
     const Account = sequelize.define('Account', {
         balance: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.STRING,
             allowNull: false,
             defaultValue: 0,
         },
@@ -28,6 +29,25 @@ module.exports = (sequelize, DataTypes) => {
                 this.setDataValue('privateKey', encrypt(value));
             },
         },
+        hooks: {
+            afterCreate: function(account, options) {
+                sequelize.models.Currency.findOne({
+                    where: {
+                        symbol: 'DC',
+                    },
+                })
+                .then((currency) => {
+                    getBalance(currency.address, account.address)
+                        .then((balance) => {
+                            account.updateAttributes({
+                                balance: balance,
+                            })
+                            .catch((err) => console.error(err));
+                        });
+                })
+                .catch(console.error);
+            }
+        }
     });
 
     Account.prototype.toJSON = function () {

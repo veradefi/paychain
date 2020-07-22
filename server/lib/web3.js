@@ -53,7 +53,7 @@ const getBalance = (contractAddress, address) => {
         
         web3.eth.call(txOptions).then((resp) => {
             let balanceInWei = web3.utils.toBN(resp).toString();
-            resolve(resp);
+            resolve(balanceInWei);
         })
         .catch(err => reject(err));
     });
