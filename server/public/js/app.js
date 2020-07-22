@@ -5,6 +5,12 @@ $(document).ready(function() {
   let tableContainer = $('#table-container');
   let form = $('#form-card');
   let host = window.location.protocol + '//' + window.location.hostname + ':' + window.location.port;
+  let stats = {
+    completed: 0,
+    failed: 0,
+    pending: 0,
+    initiated: 0,
+  };
 
   if (!dataRows.length) {
     tableContainer.addClass('hidden');
@@ -18,6 +24,32 @@ $(document).ready(function() {
   function addMoreData(item){
     let newRows = createRow(item);
     table.append(newRows);
+  }
+
+  function updateStats(){
+    $.ajax({
+      url: host + '/api/transactions/stats',
+      type: 'GET',
+      dataType: 'json',
+      success: function (response){
+        stats = {
+          completed: 0,
+          failed: 0,
+          pending: 0,
+          initiated: 0
+        };
+        response.map((stat) => {
+          stats[stat.status] = stat.statusCount;
+        });
+        let row = `<div class="d-flex justify-content-between align-items-center ">
+                    <span><b>Completed:</b> ${stats.completed}</span>
+                    <span><b>Failed:</b> ${stats.failed}</span>
+                    <span><b>Pending:</b> ${stats.pending}</span>
+                    <span><b>Initiated:</b> ${stats.initiated}</span>
+                   </div>`;
+        $("#stats").html(row);
+      }
+    });
   }
 
   function startTestCases(e) {
@@ -62,4 +94,9 @@ $(document).ready(function() {
   });
 
   init();
+
+  setInterval(() => {
+    updateStats();
+  }, 5000);
+  updateStats();
 });
