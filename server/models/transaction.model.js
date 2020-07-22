@@ -16,6 +16,10 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false,
             defaultValue: sequelize.NOW,
         },
+        processedAt: {
+            type: DataTypes.DATE,
+            allowNull: true,
+        },
         status: {
             /* eslint-disable */
             type: DataTypes.ENUM('initiated', 'committed', 'pending', 'completed', 'cancelled', 'failed'),
@@ -104,21 +108,27 @@ module.exports = (sequelize, DataTypes) => {
                     }
                 );
             },
+            beforeUpdate: function (instance, options){
+                const updatedAttributes = instance.changed();
+                if (updatedAttributes.indexOf('status') >= 0 && ['failed','completed'].indexOf(instance.status) >= 0) {
+                    instance.processedAt = new Date();
+                }
+            },
             afterCreate: function(transaction, options) {
                 sequelize.models.Transaction.findOne({
                     where: {
-                        id: transaction.id
+                        id: transaction.id,
                     },
                     include: [
                         { model: sequelize.models.Account, as: 'fromAcc'},
                         { model: sequelize.models.Account, as: 'toAcc'},
-                        { model: sequelize.models.Currency, as: 'currency'}
-                    ]
+                        { model: sequelize.models.Currency, as: 'currency'},
+                    ],
                 })
                 .then(newTransaction => {
                     addToQueue('transactions', newTransaction);
                 });
-            }
+            },
         }
     });
 
