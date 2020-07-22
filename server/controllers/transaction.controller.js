@@ -64,5 +64,14 @@ function create(req, res, next) {
         .catch(e => next(e));
 }
 
+function stats(req, res, next) {
+    Transaction.findAll({
+        group: ['status'],
+        attributes: ['status', [db.sequelize.fn('COUNT', 'status'), 'statusCount']],
+    })
+    .then(transactions => res.json(transactions))
+    .catch(e => next(e));
+}
 
-export default { load, get, create, search };
+
+export default { load, get, create, search, stats };

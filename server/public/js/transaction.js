@@ -12,7 +12,7 @@ $(document).ready(function() {
   function createRow(data){
     data.fromAddress = data.fromAcc ? data.fromAcc.address : data.from;
     data.toAddress = data.toAcc ? data.toAcc.address : data.to;
-    let row = `<tr><td>${data.id}</td><td>${data.from}</td><td>${data.to}</td><td>${data.status}</td><td>${data.transactionHash}</td></tr>`;
+    let row = `<tr><td>${data.id}</td><td>${data.from}</td><td>${data.to}</td><td>${data.amount}</td><td>${data.status}</td><td>${data.transactionHash}</td></tr>`;
     return row;
   }
 

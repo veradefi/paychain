@@ -12,6 +12,9 @@ router.route('/')
     /** GET /api/transactions - Search transactions */
     .get(transactionCtrl.search);
 
+router.route('/stats')
+    .get(transactionCtrl.stats)
+
 router.route('/:transactionId')
 
     /** GET /api/transactions/:transactionId - Get transaction */
