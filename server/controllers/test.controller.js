@@ -63,6 +63,7 @@ function start(req, res, next) {
             success: true,
             title: test.title,
             id: testCases.length + 1,
+            duration: test.duration,
         };
 
         io.emit('test result', testResult);
@@ -74,6 +75,7 @@ function start(req, res, next) {
             success: false,
             title: test.title,
             id: testCases.length + 1,
+            duration: test.duration,
         };
 
         io.emit('test result', testResult);

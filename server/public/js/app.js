@@ -6,10 +6,16 @@ $(document).ready(function() {
   let form = $('#form-card');
   let host = window.location.protocol + '//' + window.location.hostname + ':' + window.location.port;
   let stats = {
-    completed: 0,
-    failed: 0,
-    pending: 0,
-    initiated: 0,
+    transactions: {
+      completed: 0,
+      failed: 0,
+      pending: 0,
+      initiated: 0,
+    },
+    aggregate: {
+      tx_per_sec: 0,
+      confirmation_per_sec: 0,
+    },
   };
 
   if (!dataRows.length) {
@@ -17,7 +23,7 @@ $(document).ready(function() {
   }
 
   function createRow(data){
-    let row = `<tr><td>${data.id}</td><td>${data.title}</td><td>${data.success}</td></tr>`;
+    let row = `<tr><td>${data.id}</td><td>${data.title}</td><td>${data.success}</td><td>${data.duration}</td></tr>`;
     return row;
   }
 
@@ -32,20 +38,20 @@ $(document).ready(function() {
       type: 'GET',
       dataType: 'json',
       success: function (response){
-        stats = {
+        stats.transactions = {
           completed: 0,
           failed: 0,
           pending: 0,
           initiated: 0
         };
         response.map((stat) => {
-          stats[stat.status] = stat.statusCount;
+          stats.transactions[stat.status] = stat.statusCount;
         });
         let row = `<div class="d-flex justify-content-between align-items-center ">
-                    <span><b>Completed:</b> ${stats.completed}</span>
-                    <span><b>Failed:</b> ${stats.failed}</span>
-                    <span><b>Pending:</b> ${stats.pending}</span>
-                    <span><b>Initiated:</b> ${stats.initiated}</span>
+                    <span><b>Completed:</b> ${stats.transactions.completed}</span>
+                    <span><b>Failed:</b> ${stats.transactions.failed}</span>
+                    <span><b>Pending:</b> ${stats.transactions.pending}</span>
+                    <span><b>Initiated:</b> ${stats.transactions.initiated}</span>
                    </div>`;
         $("#stats").html(row);
       }
@@ -81,6 +87,10 @@ $(document).ready(function() {
     var socket = io.connect(window.location.protocol + '//' + window.location.hostname + ':1334');
     socket.on('test result', function (data) {
       addMoreData(data);
+    });
+
+    socket.on('tests finished', function(data){
+      console.log(data);
     });
   }
 

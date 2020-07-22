@@ -9,6 +9,14 @@ $(document).ready(function() {
     totalCount: 0,
     maxSize: 25,
   };
+  let stats = {
+    transactions: {
+      completed: 0,
+      failed: 0,
+      pending: 0,
+      initiated: 0,
+    }
+  };
   function createRow(data){
     data.fromAddress = data.fromAcc ? data.fromAcc.address : data.from;
     data.toAddress = data.toAcc ? data.toAcc.address : data.to;
@@ -39,6 +47,32 @@ $(document).ready(function() {
     });
   }
 
+  function updateStats(){
+    $.ajax({
+      url: host + '/api/transactions/stats',
+      type: 'GET',
+      dataType: 'json',
+      success: function (response){
+        stats.transactions = {
+          completed: 0,
+          failed: 0,
+          pending: 0,
+          initiated: 0
+        };
+        response.map((stat) => {
+          stats.transactions[stat.status] = stat.statusCount;
+        });
+        let row = `<div class="d-flex justify-content-between align-items-center ">
+                    <span><b>Completed:</b> ${stats.transactions.completed}</span>
+                    <span><b>Failed:</b> ${stats.transactions.failed}</span>
+                    <span><b>Pending:</b> ${stats.transactions.pending}</span>
+                    <span><b>Initiated:</b> ${stats.transactions.initiated}</span>
+                   </div>`;
+        $("#stats").html(row);
+      }
+    });
+  }
+
   $('#loadMoreBtn').on( 'click', function () {
       loadTransactions();
   });
@@ -48,4 +82,9 @@ $(document).ready(function() {
   });
 
   loadTransactions();
+
+  setInterval(() => {
+    updateStats();
+  }, 5000);
+  updateStats();
 });
