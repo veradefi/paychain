@@ -35,10 +35,29 @@ const signTransaction = (txOptions, privateKey) => {
     return `0x${serializedTx}`;
 };
 
-// const transfer = (txOptions, encryptedPrivKey) => {
-//     const signedTx = signTransaction(txOptions, decryptedPrivKey);
-//     return web3.eth.sendSignedTransaction(signedTx);
-// };
+const getBalance = (contractAddress, address) => {
+    return new Promise((resolve, reject) => {
+        let txOptions = {
+          gas: web3.utils.toHex("210000"),
+          gasPrice: web3.utils.toHex("3000000000"),
+          to: contractAddress,
+          data: web3.eth.abi.encodeFunctionCall({
+              name: 'balanceOf',
+              type: 'function',
+              inputs: [{
+                  type: 'address',
+                  name: 'address'
+              }]
+          }, [address])
+        }
+        
+        web3.eth.call(txOptions).then((resp) => {
+            let balanceInWei = web3.utils.toBN(resp).toString();
+            resolve(resp);
+        })
+        .catch(err => reject(err));
+    });
+}
 
 init();
 
@@ -49,4 +68,5 @@ module.exports = {
     signTransaction,
     web3,
     getReceipt,
+    getBalance,
 };
