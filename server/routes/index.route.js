@@ -19,4 +19,11 @@ router.use('/transactions', transactionRoutes);
 // mount currency routes at /test
 router.use('/currency', currencyRoutes);
 
+router.get('/*', (req, res) =>
+  res.status(404) 
+     .send('Not Found')
+);
+
+
+
 export default router;
