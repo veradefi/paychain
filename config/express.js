@@ -90,7 +90,7 @@ if (config.env !== 'test') {
 // error handler, send stacktrace only during development
 app.use((err, req, res, next) => {// eslint-disable-line no-unused-vars
     let respMessage = {
-        message: err.isPublic ? err.message : httpStatus[err.status]
+        message: err.isPublic ? err.message : (err.message || httpStatus[err.status])
     };
 
     if (config.env === 'development') {

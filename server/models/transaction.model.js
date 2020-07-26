@@ -47,6 +47,53 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: true,
         },
     }, {
+        validate: {
+            fromAccountExists: function (next) {
+                sequelize.models.Account.findOne({
+                    where: {
+                        id: this.from,
+                    },
+                })
+                .then((fromAcc) => {
+                    if (!fromAcc) {
+                        next(new Error("From account does not exist"))
+                    } else {
+                        next();
+                    }
+                })
+                .catch(next);
+            },
+            toAccountExists: function (next) {
+                sequelize.models.Account.findOne({
+                    where: {
+                        id: this.to,
+                    },
+                })
+                .then((fromAcc) => {
+                    if (!fromAcc) {
+                        next(new Error("To account does not exist"))
+                    } else {
+                        next();
+                    }
+                })
+                .catch(next);
+            },
+            currencyExists: function (next) {
+                sequelize.models.Currency.findOne({
+                    where: {
+                        id: this.currency_id,
+                    },
+                })
+                .then(currency => {
+                    if (!currency) {
+                        next(new Error("Currency does not exist"))
+                    } else {
+                        next();
+                    }
+                })
+                .catch(next);
+            }
+        },
         hooks: {
             beforeCreate: function(transaction, options) {
                 async.parallel([
