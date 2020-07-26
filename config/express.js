@@ -21,6 +21,9 @@ const app = express();
 
 if (config.env === 'development') {
     app.use(logger('dev'));
+}
+
+if (config.env === 'development' || config.env === 'production') {
     processQueue();
 }
 
@@ -41,7 +44,7 @@ app.use(cors());
 app.use("/tests", express.static(path.join(__dirname, '../server/public')));
 
 // enable detailed API logging in dev env
-if (config.env === 'development' && false) {
+if (config.env === 'development') {
     expressWinston.requestWhitelist.push('body');
     expressWinston.responseWhitelist.push('body');
     app.use(expressWinston.logger({
@@ -85,11 +88,15 @@ if (config.env !== 'test') {
 }
 
 // error handler, send stacktrace only during development
-app.use((err, req, res, next) => // eslint-disable-line no-unused-vars
-    res.status(err.status).json({
-        message: err.isPublic ? err.message : httpStatus[err.status],
-        stack: config.env === 'development' ? err.stack : {},
-    })
-);
+app.use((err, req, res, next) => {// eslint-disable-line no-unused-vars
+    let respMessage = {
+        message: err.isPublic ? err.message : httpStatus[err.status]
+    };
+
+    if (config.env === 'development') {
+        respMessage.stack = err.stack;
+    }
+    res.status(err.status).json(respMessage);
+});
 
 export default app;
