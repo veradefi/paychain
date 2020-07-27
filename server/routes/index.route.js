@@ -2,8 +2,13 @@ import express from 'express';
 import accountRoutes from './account.route';
 import transactionRoutes from './transaction.route';
 import currencyRoutes from './currency.route';
+import { version } from '../../package.json';
 
 const router = express.Router(); // eslint-disable-line new-cap
+
+router.get('/', (req, res) =>
+  res.send('API Version v' + version)
+);
 
 /** GET /health-check - Check service health */
 router.get('/health-check', (req, res) =>
