@@ -56,7 +56,7 @@ module.exports = (sequelize, DataTypes) => {
                 })
                 .then((fromAcc) => {
                     if (!fromAcc) {
-                        next(new Error("From account does not exist"))
+                        next(new Error("From account does not exist"));
                     } else {
                         next();
                     }
@@ -71,7 +71,7 @@ module.exports = (sequelize, DataTypes) => {
                 })
                 .then((fromAcc) => {
                     if (!fromAcc) {
-                        next(new Error("To account does not exist"))
+                        next(new Error("To account does not exist"));
                     } else {
                         next();
                     }
@@ -86,7 +86,22 @@ module.exports = (sequelize, DataTypes) => {
                 })
                 .then(currency => {
                     if (!currency) {
-                        next(new Error("Currency does not exist"))
+                        next(new Error("Currency does not exist"));
+                    } else {
+                        next();
+                    }
+                })
+                .catch(next);
+            },
+            hasEnoughBalance: function (next) {
+                sequelize.models.Account.findOne({
+                    where: {
+                        id: this.from,
+                    },
+                })
+                .then((fromAcc) => {
+                    if (fromAcc.balance < this.amount) {
+                        next(new Error("Insufficient balance"));
                     } else {
                         next();
                     }
@@ -95,67 +110,6 @@ module.exports = (sequelize, DataTypes) => {
             }
         },
         hooks: {
-            beforeCreate: function(transaction, options) {
-                async.parallel([
-                    (callback) => {
-                        sequelize.models.Account.findOne({
-                            where: {
-                                id: transaction.from,
-                            },
-                        })
-                        .then(fromAcc => {
-                            if (!fromAcc) {
-                                callback(new Error("From account does not exist"))
-                            } else {
-                                callback(null);
-                            }
-                        })
-                        .catch(err => {
-                            callback(err);
-                        });
-                    },
-                    (callback) => {
-                        sequelize.models.Account.findOne({
-                            where: {
-                                id: transaction.to,
-                            },
-                        })
-                        .then(toAcc => {
-                            if (!toAcc) {
-                                callback(new Error("To account does not exist"))
-                            } else {
-                                callback(null);
-                            }
-                        })
-                        .catch(err => {
-                            callback(err);
-                        });
-                    },
-                    (callback) => {
-                        sequelize.models.Currency.findOne({
-                            where: {
-                                id: transaction.currency_id,
-                            },
-                        })
-                        .then(currency => {
-                            if (!currency) {
-                                callback(new Error("Currency does not exist"))
-                            } else {
-                                callback(null);
-                            }
-                        })
-                        .catch(err => {
-                            callback(err);
-                        });
-                    }
-                ],
-                    (err, results) => {
-                        if (err) {
-                            throw err;
-                        }
-                    }
-                );
-            },
             beforeUpdate: function (instance, options){
                 const updatedAttributes = instance.changed();
                 if (updatedAttributes.indexOf('status') >= 0 && ['failed','completed'].indexOf(instance.status) >= 0) {
