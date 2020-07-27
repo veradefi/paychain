@@ -40,7 +40,7 @@ function create(req, res, next) {
         address: req.body.address,
     });
     currency.save()
-        .then(savedCurrency => res.json(savedCurrency))
+        .then(savedCurrency => res.status(201).json(savedCurrency))
         .catch(e => next(e));
 }
 
@@ -54,7 +54,7 @@ function update(req, res, next) {
     currency.address = req.body.address;
 
     currency.save()
-        .then(savedCurrency => res.json(savedCurrency))
+        .then(savedCurrency => res.status(200).json(savedCurrency))
         .catch(e => next(e));
 }
 
@@ -68,12 +68,12 @@ function updateOrCreate(req, res, next){
     .then((currency) => {
         if (currency) {
             return currency.updateAttributes(update)
-            .then(savedCurrency => res.json(savedCurrency))
+            .then(savedCurrency => res.status(200).json(savedCurrency))
             .catch(e => next(e))
         } else {
             const upsert = {...query, ...update};
             Currency.create(upsert)
-            .then(savedCurrency => res.json(savedCurrency))
+            .then(savedCurrency => res.status(201).json(savedCurrency))
             .catch(e => next(e))
         }
     })

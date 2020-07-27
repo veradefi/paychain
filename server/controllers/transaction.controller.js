@@ -60,7 +60,7 @@ function create(req, res, next) {
 
     transaction.status = 'initiated';
     transaction.save()
-        .then(savedTransaction => res.json(savedTransaction))
+        .then(savedTransaction => res.status(201).json(savedTransaction))
         .catch(e => next(e));
 }
 

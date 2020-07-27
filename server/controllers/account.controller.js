@@ -41,7 +41,7 @@ function create(req, res, next) {
         privateKey: req.body.privateKey || web3Account.privateKey,
     });
     account.save()
-        .then(savedAccount => res.json(savedAccount))
+        .then(savedAccount => res.status(201).json(savedAccount))
         .catch(e => next(e));
 }
 
