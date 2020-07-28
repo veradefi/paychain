@@ -100,7 +100,7 @@ module.exports = (sequelize, DataTypes) => {
                     },
                 })
                 .then((fromAcc) => {
-                    if (fromAcc.balance < this.amount) {
+                    if (!fromAcc || fromAcc.balance < this.amount) {
                         next(new Error("Insufficient balance"));
                     } else {
                         next();

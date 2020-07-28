@@ -28,6 +28,40 @@ function get(req, res) {
     return res.json(req.transaction);
 }
 
+function buildSearchQuery(params) {
+    let query = {};
+    for (const key of Object.keys(params)) {
+        switch(key) {
+            case 'dateFrom':
+                query['createdAt'] = {
+                    $gte: params[key]
+                };
+                break;
+            case 'dateTo':
+                query['createdAt'] = {
+                    $lte: params[key]
+                };
+                break;
+            case 'amountFrom':
+                query['amount'] = {
+                    $gte: params[key]
+                };
+                break;
+            case 'amountTo':
+                query['amount'] = {
+                    $lte: params[key]
+                };
+                break;
+            case 'limit':
+            case 'offset':
+                break;
+            default:
+                query[key] = params[key];
+                break;
+        }
+    }
+    return query;
+} 
 /**
  * Search transaction
  * @returns [Transaction]
@@ -35,7 +69,9 @@ function get(req, res) {
 function search(req, res, next) {
     const offset = parseInt(req.query.offset) || 0;
     const limit  = parseInt(req.query.limit) || 50;
-    Transaction.findAll({ limit, offset,
+    const query  = buildSearchQuery(req.query);
+
+    Transaction.findAll({ where: query, limit, offset,
           include: [
               { model: db.Account, as: 'fromAcc'},
               { model: db.Account, as: 'toAcc'},
@@ -64,12 +100,17 @@ function create(req, res, next) {
         .catch(e => next(e));
 }
 
+/**
+ * Calculates transaction stats
+ * @returns stats
+ */
+
 function stats(req, res, next) {
     Transaction.findAll({
         group: ['status'],
         attributes: ['status', [db.sequelize.fn('COUNT', 'status'), 'statusCount']],
     })
-    .then(transactions => res.json(transactions))
+    .then(transactionStats => res.json(transactionStats))
     .catch(e => next(e));
 }
 

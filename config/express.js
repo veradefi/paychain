@@ -90,12 +90,18 @@ if (config.env !== 'test') {
 // error handler, send stacktrace only during development
 app.use((err, req, res, next) => {// eslint-disable-line no-unused-vars
     let respMessage = {
-        message: err.isPublic ? err.message : (err.message || httpStatus[err.status])
-    };
+        "statusCode": err.status,
+        "error": httpStatus[err.status],
+        "message": err.isPublic ? err.message : (err.message || httpStatus[err.status]),
+        "data": {
+            "code": 13003
+        }
+    }
 
     if (config.env === 'development') {
         respMessage.stack = err.stack;
     }
+
     res.status(err.status).json(respMessage);
 });
 
