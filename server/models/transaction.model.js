@@ -1,7 +1,7 @@
 
 import { add as addToQueue, setModel } from '../helpers/queue';
 import async from 'async';
-import BN from 'bn.js';
+import BN from 'bn.js'
 /**
  * Transaction Schema
  */

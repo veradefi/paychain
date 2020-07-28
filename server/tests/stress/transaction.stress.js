@@ -37,7 +37,6 @@ describe('## Transaction stress tests', () => {
             request(config.api_url)
                 .post(`/api/currency/upsert`)
                 .send(currency)
-                .expect(httpStatus.OK)
                 .then((res) => {
                     expect(res.body.address).to.equal(tokenContract.address);
                     done();
@@ -79,7 +78,7 @@ describe('## Transaction stress tests', () => {
                 request(config.api_url)
                     .post('/api/accounts')
                     .send(account)
-                    .expect(httpStatus.OK)
+                    .expect(httpStatus.CREATED)
                     .then((res) => {
                         apiAccounts.push(res.body);
                         done();
@@ -157,7 +156,7 @@ function sendTransactionRequests(size = 100) {
             request(config.api_url)
                 .post('/api/transactions')
                 .send(transaction)
-                .expect(httpStatus.OK)
+                .expect(httpStatus.CREATED)
                 .then((res) => {
                     expect(res.body.amount).to.equal(transaction.amount);
                     expect(res.body.to).to.equal(transaction.to);

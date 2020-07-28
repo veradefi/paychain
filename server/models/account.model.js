@@ -6,7 +6,7 @@ import { getBalance } from '../lib/web3';
 module.exports = (sequelize, DataTypes) => {
     const Account = sequelize.define('Account', {
         balance: {
-            type: DataTypes.STRING,
+            type: DataTypes.DECIMAL(40,0),
             allowNull: false,
             defaultValue: 0,
         },
@@ -24,6 +24,15 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false,
         },
     }, {
+        validate: {
+            noNegativeBalance: function (next) {
+                if (this.balance < 0) {
+                    next(new Error("Balance cannot be negative"));
+                } else {
+                    next();
+                }
+            }
+        },
         setterMethods: {
             privateKey(value) {
                 this.setDataValue('privateKey', encrypt(value));
