@@ -18,48 +18,6 @@ let tokenContract = {
 };
 
 describe('## Transaction stress tests', () => {
-    describe('# Deploy token and balance transfer', () => {
-        before((done) => {
-            done();
-        });
-
-        after((done) => {
-            const currency = {
-                query: {
-                    symbol: 'DC',
-                },
-                update: {
-                    address: tokenContract.address,
-                    full_name: 'Dummy Coin',
-                    short_name: 'Dummy',
-                }
-            };
-            request(config.api_url)
-                .post(`/api/currency/upsert`)
-                .send(currency)
-                .then((res) => {
-                    expect(res.body.address).to.equal(tokenContract.address);
-                    done();
-                })
-                .catch(done);
-        });
-
-        it('deploy token and init tests', (done) => {
-            request(config.api_url)
-                .post('/tests/init')
-                .expect(httpStatus.OK)
-                .then((res) => {
-                    expect(res.body.success).to.equal(true);
-                    expect(res.body.accounts).to.have.lengthOf(10);
-
-                    tokenContract.accounts = res.body.accounts;
-                    tokenContract.address = res.body.contractAddress;
-                    done();
-                })
-                .catch(done);
-        });
-    });
-
 
     describe('# Create api accounts', () => {
         after((done) => {
@@ -87,6 +45,47 @@ describe('## Transaction stress tests', () => {
             });
         }
     });
+
+    // describe('# Deploy token and balance transfer', () => {
+    //     before((done) => {
+    //         done();
+    //     });
+
+    //     after((done) => {
+    //         const currency = {
+    //             query: {
+    //                 symbol: 'DC',
+    //             },
+    //             update: {
+    //                 address: tokenContract.address,
+    //                 full_name: 'Dummy Coin',
+    //                 short_name: 'Dummy',
+    //             }
+    //         };
+    //         request(config.api_url)
+    //             .post(`/api/currency/upsert`)
+    //             .send(currency)
+    //             .then((res) => {
+    //                 expect(res.body.address).to.equal(tokenContract.address);
+    //                 done();
+    //             })
+    //             .catch(done);
+    //     });
+
+    //     it('deploy token and init tests', (done) => {
+    //         request(config.api_url)
+    //             .post('/tests/init')
+    //             .expect(httpStatus.OK)
+    //             .then((res) => {
+    //                 expect(res.body.success).to.equal(true);
+
+    //                 tokenContract.accounts = res.body.accounts;
+    //                 tokenContract.address = res.body.contractAddress;
+    //                 done();
+    //             })
+    //             .catch(done);
+    //     });
+    // });
 });
 
 // function startLoadTesting(done){
@@ -142,7 +141,7 @@ function sendTransactionRequests(size = 100) {
         const transaction = {
             amount: 100,
             to: getRandom(1,10),
-            from: getRandom(1,10),
+            from: 3,//getRandom(1,10),
             currency_id: 1,
         };
 

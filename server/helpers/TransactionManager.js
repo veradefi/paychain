@@ -59,30 +59,30 @@ class Slot {
 
 class TransactionManager {
     sending_queue = {};
-    maxPending = 5;
+    maxPending = 100;
 
     initSlot (fromAddress) {
-        return new Promise((resolve, reject) => {
-            getTransactionCount(fromAddress)
-            .then((count) => {
+        // return new Promise((resolve, reject) => {
+        //     getTransactionCount(fromAddress)
+        //     .then((count) => {
                 this.sending_queue[fromAddress] = {};
                 this.sending_queue[fromAddress].fromAddress = fromAddress;
                 this.sending_queue[fromAddress].slots = [];
-
+                this.sending_queue[fromAddress].slotMaxPending = 10;
                 this.sending_queue[fromAddress].slotInterval = setInterval(() => {
                     this.processSlot(fromAddress);
                 }, 1000);
 
-                resolve(this.sending_queue[fromAddress]);
-            });
-        });
+                // resolve(this.sending_queue[fromAddress]);
+            // });
+        // });
     }
 
     addToSlot (fromAddress, params, pending, success, error) {
         const slot = new Slot(params, pending, success, error);
         this.sending_queue[fromAddress].slots.push(slot);
 
-        if (this.sending_queue[fromAddress].slots.length >= this.maxPending) {
+        if (this.sending_queue[fromAddress].slots.length >= this.sending_queue[fromAddress].slotMaxPending) {
             this.processSlot(fromAddress);
         }
     }
@@ -98,7 +98,7 @@ class TransactionManager {
         getTransactionCount(queue.fromAddress)
         .then((nonce) => {
             const batch = new web3.BatchRequest();
-            const slots = queue.slots.splice(0, 10);
+            const slots = queue.slots.splice(0, queue.slotMaxPending);
 
             Promise.all(slots.map((slot, index) => {
                 const _nonce = nonce + index;
@@ -107,10 +107,13 @@ class TransactionManager {
                 const signedTx = signTransaction(slot.transaction, decryptedPrivKey);
                 batch.add(web3.eth.sendSignedTransaction.request(signedTx, 'receipt', (err, transactionHash) => {
                     if (err) {
-                        return slot.errorCallback(err, _nonce);
+                        setTimeout(() => {
+                            this.addToSlot(slot.params.from, slot.params, slot.pendingCallback, slot.successCallback, slot.errorCallback);
+                        }, 5000);
+                        // return slot.errorCallback(err, _nonce);
                     } else {
-                        slot.pendingCallback(transactionHash, _nonce);
-                        return slot.getReceipt(transactionHash);
+                        return slot.pendingCallback(transactionHash, _nonce);
+                        // return slot.getReceipt(transactionHash);
                     }
                 }));
             }));
@@ -121,9 +124,8 @@ class TransactionManager {
 
     addTransaction (params, pending, success, error) {
         if (!this.sending_queue[params.from]) {
-            this.initSlot(params.from).then(() => {
-                this.addToSlot(params.from, params, pending, success, error);
-            });
+            this.initSlot(params.from);
+            this.addToSlot(params.from, params, pending, success, error);
         } else {
             this.addToSlot(params.from, params, pending, success, error);
         }

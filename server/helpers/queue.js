@@ -28,9 +28,9 @@ const add = (queueType, transaction) => {
         console.log('Queue job started', job.id);
     });
 
-    // job.on('complete', (result) => {
-    //     console.log('Job completed with data ');
-    // });
+    job.on('complete', (result) => {
+        console.log('Job completed with data ');
+    });
 
     // job.on('failed', (errorMessage) => {
     //     console.log(`Job failed ${errorMessage}`);
@@ -69,22 +69,23 @@ const sendTransaction = (transaction, done) => {
         transactionManager.addTransaction(params, (transactionHash, nonce) => {
             // console.log("transactionHash", JSON.stringify(transactionHash));
             setStatus(transaction, 'pending', {
-                transactionHash: JSON.stringify(transactionHash),
+                statusDescription: '',
+                transactionHash: transactionHash,
             }).then(() => {
-                done(null, transactionHash);
+                // done(null, transactionHash);
             });
         }, (receipt) => {
             // console.log("receipt", JSON.stringify(receipt));
             setStatus(transaction, 'completed', {
                 statusDescription: JSON.stringify(receipt),
             }).then(() => {
-                done(null, receipt);
+                // done(null, receipt);
             });
         }, (error, nonce) => {
             setStatus(transaction, 'failed', {
                 statusDescription: error.toString()
             }).then(() => {
-                done(error);
+                // done(error);
                 if (shouldRetry(error)) {
                   add(config.queue.name, transaction);
                 }

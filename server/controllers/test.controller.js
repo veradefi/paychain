@@ -4,9 +4,13 @@ import path from 'path';
 import Mocha from 'mocha';
 import fs from 'fs';
 import io from '../../config/socket';
+import db from '../../config/sequelize';
 import config from '../../config/config';
 import Token from '../../../build/contracts/TestERC20.json';
 import { getAllAccounts, web3 } from '../lib/web3';
+import { decrypt } from '../helpers/crypto';
+
+const Account = db.Account;
 
 function index(req, res, next) {
     return res.sendFile(path.join(__dirname, '../public/index.html'));
@@ -91,10 +95,13 @@ function init(req, res, next) {
     let accounts = [];
     let tokenOwner;
     let tokenContract;
-    getAllAccounts()
+
+    Account.findAll({ limit: 10})
         .then((_accounts) => {
             accounts = _accounts;
-            tokenOwner = accounts[0];
+            tokenOwner = accounts[0].address;
+            web3.eth.accounts.wallet.add(decrypt(accounts[0].privateKey));
+
             const ContractAbi = new web3.eth.Contract(Token.abi);
             ContractAbi
                 .deploy({ data: Token.bytecode })
@@ -109,9 +116,6 @@ function init(req, res, next) {
                               .methods
                               .balanceOf(tokenOwner)
                               .call({ from: tokenOwner });
-                })
-                .catch((err) => {
-                    console.error(err);
                 })
                 .then((result) => {
                     result = new BN(result);
@@ -139,7 +143,8 @@ function init(req, res, next) {
                     })
                 })
                 .catch((err) => {
-                    next(err);
+                    console.error(err);
+                    // next(err);
                 })
         })
         .catch((err) => {

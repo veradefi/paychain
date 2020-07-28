@@ -24,6 +24,7 @@ const getTransactionCount = (address) => {
 };
 
 const getReceipt = (transactionHash) => {
+    // transactionHash = transactionHash.slice(1, -1);
     return web3.eth.getTransactionReceipt(transactionHash);
 };
 

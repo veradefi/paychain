@@ -26,9 +26,8 @@ const updateStatus = (transaction, status, statusDescription) => {
 
 const generateBulkQuery = (transactions) => {
     for (let i = 0; i < transactions.length; i += 1) {
-        getReceipt(transactions[i].statusDescription)
+        getReceipt(transactions[i].transactionHash)
             .then((receipt) => {
-                console.log(receipt);
                 if (receipt) {
                     updateStatus(transactions[i], 'completed', JSON.stringify(receipt));
                 }
@@ -42,7 +41,7 @@ const fetchTransactions = () => {
         where: {
             status: 'pending',
         },
-        attributes: ['status', 'id', 'statusDescription'],
+        attributes: ['status', 'id', 'transactionHash'],
     });
 };
 
@@ -64,6 +63,6 @@ const task = cron.schedule('* * * * *', () => {
 });
 
 task.start();
-task.stop();
-// startProcessing();
+// task.stop();
+startProcessing();
 export default cron;
