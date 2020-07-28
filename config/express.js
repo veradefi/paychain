@@ -92,10 +92,7 @@ app.use((err, req, res, next) => {// eslint-disable-line no-unused-vars
     let respMessage = {
         "statusCode": err.status,
         "error": httpStatus[err.status],
-        "message": err.isPublic ? err.message : (err.message || httpStatus[err.status]),
-        "data": {
-            "code": 13003
-        }
+        "message": err.isPublic ? err.message : (err.message || httpStatus[err.status])
     }
 
     if (config.env === 'development') {
