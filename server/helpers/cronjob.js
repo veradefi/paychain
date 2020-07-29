@@ -1,8 +1,10 @@
 import cron from 'node-cron';
 import db from '../../config/sequelize';
 import { getReceipt } from '../lib/web3';
+import { add as addToQueue, setModel } from './queue';
 
 const Transaction = db.Transaction;
+setModel(Transaction);
 
 const updateStatus = (transaction, status, statusDescription) => {
     return new Promise((resolve, reject) => {
@@ -30,23 +32,55 @@ const generateBulkQuery = (transactions) => {
             .then((receipt) => {
                 if (receipt) {
                     updateStatus(transactions[i], 'completed', JSON.stringify(receipt));
+                } else {
+
                 }
             })
             .catch(console.error);
     }
 };
 
-const fetchTransactions = () => {
+const fetchStuckTransactions = () => {
+    // const interval = 300 + 5; // 300 minutes
     return Transaction.findAll({
         where: {
             status: 'pending',
+            processedAt: {
+                $lt: db.sequelize.fn('DATE_SUB', db.sequelize.fn('NOW'), db.sequelize.literal('INTERVAL 5 MINUTE'))
+            }
         },
-        attributes: ['status', 'id', 'transactionHash'],
+        include: [
+            { model: db.sequelize.models.Account, as: 'fromAcc'},
+            { model: db.sequelize.models.Account, as: 'toAcc'},
+            { model: db.sequelize.models.Currency, as: 'currency'},
+        ],
     });
 };
 
-const startProcessing = () => {
-    fetchTransactions()
+const fetchPendingTransactions = () => {
+    return Transaction.findAll({
+        where: {
+            status: 'pending',
+            processedAt: {
+                $gt: db.sequelize.fn('DATE_SUB', db.sequelize.fn('NOW'), db.sequelize.literal('INTERVAL 5 MINUTE'))
+            }
+        },
+        attributes: ['status', 'id', 'transactionHash', 'processedAt'],
+    });
+}
+
+const processStuckTransactions = () => {
+    fetchStuckTransactions()
+      .then((transactions) => {
+          for (let i = 0; i < transactions.length; i++) {
+              addToQueue('transactions', transactions[i]);
+          }
+      })
+      .catch(console.log);
+};
+
+const processPendingTransactions = () => {
+    fetchPendingTransactions()
       .then((transactions) => {
           generateBulkQuery(transactions);
       })
@@ -54,15 +88,22 @@ const startProcessing = () => {
 };
 
 // Runs a task every minute
-const task = cron.schedule('* * * * *', () => {
-    fetchTransactions()
-        .then((transactions) => {
-            generateBulkQuery(transactions);
-        })
-        .catch(console.log);
+const completedTask = cron.schedule('* * * * *', () => {
+    processStuckTransactions();
 });
 
-task.start();
-// task.stop();
-startProcessing();
+const pendingTask = cron.schedule('* * * * *', () => {
+    processPendingTransactions();
+});
+
+completedTask.start();
+// completedTask.stop();
+
+pendingTask.start();
+// pendingTask.stop();
+
+// startProcessing();
+
+processStuckTransactions();
+processPendingTransactions();
 export default cron;

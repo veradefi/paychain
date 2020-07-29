@@ -140,7 +140,7 @@ function sendTransactionRequests(size = 100) {
     for (let i = 0 ; i < size ; i++ ) {
         const transaction = {
             amount: 100,
-            to: getRandom(1,10),
+            to: getRandom(303,318),
             from: 3,//getRandom(1,10),
             currency_id: 1,
         };

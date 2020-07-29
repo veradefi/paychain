@@ -21,6 +21,7 @@ const sequelize = new Sequelize(config.postgres.db,
             idle: 20000,
             acquire: 20000,
         },
+        timezone: '+05:00'
     });
 
 const modelsDir = path.normalize(`${__dirname}/../server/models`);

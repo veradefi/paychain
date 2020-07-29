@@ -68,10 +68,10 @@ class TransactionManager {
                 this.sending_queue[fromAddress] = {};
                 this.sending_queue[fromAddress].fromAddress = fromAddress;
                 this.sending_queue[fromAddress].slots = [];
-                this.sending_queue[fromAddress].slotMaxPending = 10;
+                this.sending_queue[fromAddress].slotMaxPending = 25;
                 this.sending_queue[fromAddress].slotInterval = setInterval(() => {
                     this.processSlot(fromAddress);
-                }, 1000);
+                }, 2000);
 
                 // resolve(this.sending_queue[fromAddress]);
             // });
@@ -81,6 +81,11 @@ class TransactionManager {
     addToSlot (fromAddress, params, pending, success, error) {
         const slot = new Slot(params, pending, success, error);
         this.sending_queue[fromAddress].slots.push(slot);
+
+        clearInterval(this.sending_queue[fromAddress].slotInterval);
+        this.sending_queue[fromAddress].slotInterval = setInterval(() => {
+            this.processSlot(fromAddress);
+        }, 2000);
 
         if (this.sending_queue[fromAddress].slots.length >= this.sending_queue[fromAddress].slotMaxPending) {
             this.processSlot(fromAddress);
@@ -107,10 +112,11 @@ class TransactionManager {
                 const signedTx = signTransaction(slot.transaction, decryptedPrivKey);
                 batch.add(web3.eth.sendSignedTransaction.request(signedTx, 'receipt', (err, transactionHash) => {
                     if (err) {
-                        setTimeout(() => {
-                            this.addToSlot(slot.params.from, slot.params, slot.pendingCallback, slot.successCallback, slot.errorCallback);
-                        }, 5000);
-                        // return slot.errorCallback(err, _nonce);
+                        console.log("An error occurred" + err.toString());
+                        // setTimeout(() => {
+                        //     this.addToSlot(slot.params.from, slot.params, slot.pendingCallback, slot.successCallback, slot.errorCallback);
+                        // }, 5000);
+                        return slot.errorCallback(err, _nonce);
                     } else {
                         return slot.pendingCallback(transactionHash, _nonce);
                         // return slot.getReceipt(transactionHash);

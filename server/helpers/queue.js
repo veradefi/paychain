@@ -19,10 +19,11 @@ const setModel = (TransactionModel) => {
     Model = TransactionModel;
 };
 
-const add = (queueType, transaction) => {
+const add = (queueType, transaction, delay = 0) => {
     const job = queue
                     .create(queueType, transaction)
                     .priority('high')
+                    .delay(delay)
                     .save();
     job.on('start', () => {
         console.log('Queue job started', job.id);
@@ -65,12 +66,19 @@ const sendTransaction = (transaction, done) => {
         contractAddress: transaction.currency.address, // Need this address to be of token
     };
 
-    return setStatus(transaction, 'committed').then(() => {
+    return setStatus(transaction, 'committed', {
+        statusDescription: '',
+        transactionHash: '',
+        store_id: '',
+        processedAt: null
+    }).then(() => {
         transactionManager.addTransaction(params, (transactionHash, nonce) => {
             // console.log("transactionHash", JSON.stringify(transactionHash));
             setStatus(transaction, 'pending', {
                 statusDescription: '',
                 transactionHash: transactionHash,
+                store_id: nonce,
+                processedAt: new Date(),
             }).then(() => {
                 // done(null, transactionHash);
             });
@@ -87,7 +95,7 @@ const sendTransaction = (transaction, done) => {
             }).then(() => {
                 // done(error);
                 if (shouldRetry(error)) {
-                  add(config.queue.name, transaction);
+                  add(config.queue.name, transaction, 30000);
                 }
             });
         });
