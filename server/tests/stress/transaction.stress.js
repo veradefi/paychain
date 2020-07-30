@@ -19,32 +19,32 @@ let tokenContract = {
 
 describe('## Transaction stress tests', () => {
 
-    describe('# Create api accounts', () => {
-        after((done) => {
-            done();
-            // startLoadTesting(done);
-        });
+    // describe('# Create api accounts', () => {
+    //     after((done) => {
+    //         done();
+    //         // startLoadTesting(done);
+    //     });
 
-        for (let i = 0; i < jsonAccounts.length; i += 1) {
-            const account = {
-                balance: 0,
-                address: jsonAccounts[i].address,
-                privateKey: jsonAccounts[i].privateKey,
-            };
+    //     for (let i = 0; i < jsonAccounts.length; i += 1) {
+    //         const account = {
+    //             balance: 0,
+    //             address: jsonAccounts[i].address,
+    //             privateKey: jsonAccounts[i].privateKey,
+    //         };
 
-            it('should create 10 api accounts', (done) => {
-                request(config.api_url)
-                    .post('/api/accounts')
-                    .send(account)
-                    .expect(httpStatus.CREATED)
-                    .then((res) => {
-                        apiAccounts.push(res.body);
-                        done();
-                    })
-                    .catch(done);
-            });
-        }
-    });
+    //         it('should create 10 api accounts', (done) => {
+    //             request(config.api_url)
+    //                 .post('/api/accounts')
+    //                 .send(account)
+    //                 .expect(httpStatus.CREATED)
+    //                 .then((res) => {
+    //                     apiAccounts.push(res.body);
+    //                     done();
+    //                 })
+    //                 .catch(done);
+    //         });
+    //     }
+    // });
 
     // describe('# Deploy token and balance transfer', () => {
     //     before((done) => {
@@ -140,8 +140,8 @@ function sendTransactionRequests(size = 100) {
     for (let i = 0 ; i < size ; i++ ) {
         const transaction = {
             amount: 100,
-            to: getRandom(303,318),
-            from: 3,//getRandom(1,10),
+            to: getRandom(1,7),
+            from: getRandom(1,7),
             currency_id: 1,
         };
 

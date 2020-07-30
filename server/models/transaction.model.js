@@ -8,7 +8,7 @@ import BN from 'bn.js'
 module.exports = (sequelize, DataTypes) => {
     const Transaction = sequelize.define('Transaction', {
         amount: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.DECIMAL(40,0),
             allowNull: false,
             defaultValue: 0,
         },

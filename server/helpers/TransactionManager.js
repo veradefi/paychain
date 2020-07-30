@@ -68,10 +68,10 @@ class TransactionManager {
                 this.sending_queue[fromAddress] = {};
                 this.sending_queue[fromAddress].fromAddress = fromAddress;
                 this.sending_queue[fromAddress].slots = [];
-                this.sending_queue[fromAddress].slotMaxPending = 25;
+                this.sending_queue[fromAddress].slotMaxPending = 250;
                 this.sending_queue[fromAddress].slotInterval = setInterval(() => {
                     this.processSlot(fromAddress);
-                }, 2000);
+                }, 10000);
 
                 // resolve(this.sending_queue[fromAddress]);
             // });
@@ -85,7 +85,7 @@ class TransactionManager {
         clearInterval(this.sending_queue[fromAddress].slotInterval);
         this.sending_queue[fromAddress].slotInterval = setInterval(() => {
             this.processSlot(fromAddress);
-        }, 2000);
+        }, 10000);
 
         if (this.sending_queue[fromAddress].slots.length >= this.sending_queue[fromAddress].slotMaxPending) {
             this.processSlot(fromAddress);
