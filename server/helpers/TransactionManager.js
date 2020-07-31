@@ -62,20 +62,22 @@ class TransactionManager {
     maxPending = 100;
 
     initSlot (fromAddress) {
-        // return new Promise((resolve, reject) => {
-        //     getTransactionCount(fromAddress)
-        //     .then((count) => {
+        return new Promise((resolve, reject) => {
+            getTransactionCount(fromAddress)
+            .then((count) => {
                 this.sending_queue[fromAddress] = {};
                 this.sending_queue[fromAddress].fromAddress = fromAddress;
                 this.sending_queue[fromAddress].slots = [];
                 this.sending_queue[fromAddress].slotMaxPending = 250;
+                this.sending_queue[fromAddress].nonce = count;
+                clearInterval(this.sending_queue[fromAddress].slotInterval);
                 this.sending_queue[fromAddress].slotInterval = setInterval(() => {
                     this.processSlot(fromAddress);
-                }, 10000);
+                }, 5000);
 
-                // resolve(this.sending_queue[fromAddress]);
-            // });
-        // });
+                resolve(this.sending_queue[fromAddress]);
+            });
+        });
     }
 
     addToSlot (fromAddress, params, pending, success, error) {
@@ -85,7 +87,7 @@ class TransactionManager {
         clearInterval(this.sending_queue[fromAddress].slotInterval);
         this.sending_queue[fromAddress].slotInterval = setInterval(() => {
             this.processSlot(fromAddress);
-        }, 10000);
+        }, 5000);
 
         if (this.sending_queue[fromAddress].slots.length >= this.sending_queue[fromAddress].slotMaxPending) {
             this.processSlot(fromAddress);
@@ -100,11 +102,11 @@ class TransactionManager {
     }
 
     sendBatchTransactions (queue) {
-        getTransactionCount(queue.fromAddress)
-        .then((nonce) => {
+        // getTransactionCount(queue.fromAddress)
+        // .then((nonce) => {
             const batch = new web3.BatchRequest();
             const slots = queue.slots.splice(0, queue.slotMaxPending);
-
+            const nonce = queue.nonce;
             Promise.all(slots.map((slot, index) => {
                 const _nonce = nonce + index;
                 slot.transaction = slot.generateTransaction(_nonce, slot.params);
@@ -118,6 +120,7 @@ class TransactionManager {
                         // }, 5000);
                         return slot.errorCallback(err, _nonce);
                     } else {
+                        queue.nonce++;
                         return slot.pendingCallback(transactionHash, _nonce);
                         // return slot.getReceipt(transactionHash);
                     }
@@ -125,13 +128,14 @@ class TransactionManager {
             }));
 
             batch.execute();
-        });
+        // });
     }
 
     addTransaction (params, pending, success, error) {
         if (!this.sending_queue[params.from]) {
-            this.initSlot(params.from);
-            this.addToSlot(params.from, params, pending, success, error);
+            this.initSlot(params.from).then(() => {
+                this.addToSlot(params.from, params, pending, success, error);
+            });
         } else {
             this.addToSlot(params.from, params, pending, success, error);
         }
