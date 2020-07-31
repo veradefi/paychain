@@ -79,10 +79,7 @@ This API returns both, machine-readable error codes and human-readable error mes
 {
     "statusCode": 400,
     "error": "Bad request",
-    "message": "Invalid address",
-    "data": {
-        "code": 13003
-    }
+    "message": "Invalid address"
 }
 ```
 
@@ -92,9 +89,6 @@ This API returns both, machine-readable error codes and human-readable error mes
 + `10010` - Invalid Content-Type
 + `10011` - Invalid User-Agent
 + `10012` - Invalid or missing Application-Id
-+ `11001` - Invalid or expired token
-+ `11005` - Account not allowed to access this endpoint
-+ `13003` - Your account is suspended and is not permitted to access this feature
 
 ## Versioning
 
@@ -128,12 +122,12 @@ Fetches the details of a single  account.
 
 
 + Parameters 
-    + account_id: '1234' (string) - ID of the account to be fetched
+    + account_id: '1234' (number) - ID of the account to be fetched
 
 
             
 + Response 200 (application/json)
-    + Attributes (Account)
+    + Attributes (newAccount)
 
 
 # Group Transactions 
@@ -182,8 +176,8 @@ Search  all available transactions matching search terms.
      + Parameters
         + from: '0x12' (string) - Account ID of the transaction source
         + to: '0x13' (string) - Account ID of the transaction destination
-        + dateFrom: '2018/01/01' (string) - The date to search from, inclusive from 00:00
-        + dateTo: '2018/02/01' (string) - The date to search to, inclusive to 23:59:59
+        + dateFrom: '2018-01-01' (string) - The date to search from, inclusive from 00:00
+        + dateTo: '2018-02-01' (string) - The date to search to, inclusive to 23:59:59
         + status: 'completed' (string) - Any valid transaction statuses
         + amountFrom: 0 (number) - The amount to search from, inclusive
         + amountTo: 100 (number) - The amount to search to, inclusive
@@ -198,32 +192,50 @@ Search  all available transactions matching search terms.
 
 # Group Marketplace
 
-## Currencies
+## Currencies [/currencies]
 
-###  Currencies [GET /currencies]
+###  Fetch currencies [GET]
 
 Fetches list of currencies supported
-
-
-
 
 + Response 200 (application/json)
     + Attributes (array[Currency])
         
+###  Create new currency [POST]
 
+Add a new currency
 
++ Request
+    + Attributes (Currency)
+    
++ Response 200 (application/json)
+    + Attributes (Currency)
+
+### Fetch Currency Details [GET /currencies/{currency_id}]
+
++ Parameters
+    + currency_id: 1 (number,required) - ID of the currency to be fetched
+    
++ Response 200 (application/json)
+    + Attributes (Currency)
+
++ Response 404
 
 # Data Structures
 
 ## Resource (object)
-+ id: `a6vhAo3FG7t1` (string, fixed) - Short non-sequential url-friendly unique id.
++ id: 1 (number, fixed) - Sequential mysql unique id.
 + createdAt: `1529511042` (string) - Created Time.  
++ updatedAt: `1529511042` (string) - Last updated at.  
 
 ## Account (Resource)
 + balance: 3000 (number,required) 
++ address: '0x908991b223b90e730d8274df43b741b61c77f47f' (string, fixed)
++ privateKey: 'b2930bb302058cbfdb815d28b6589808ecf5706c5c2253184dc0f807a1a6c932d6640254d7e637773bddf2470498b76fb38f22a4018774985fc81ff68ec501cbca27c4a0de0c0ea17ed17d0d614cca31' (string, required) - Encrypted private key of the account used to sign transactions
 
 ## newAccount (Resource)
 + balance: 0 (number)
++ address: '0x908991b223b90e730d8274df43b741b61c77f47f' (string)
 
 
 ## Meta
@@ -237,23 +249,30 @@ Fetches list of currencies supported
 + full_name: 'Freedom Coin' (string) - Full name of the currency
 + short_name: 'Coin' (string) - Short Name of the currency
 + symbol: FC (string) - Symbol of the currency
-
++ address: '0xcd3f20f740e359205e382b68b7da26bccb7e635b' (string) - Contract address of currency
 
 ## Transaction (Resource)
-+ from: '39629393' (string) - Account ID of source / sending account
-+ to: 'G7yQo6RIEeuT' (string) - Account ID of destination / receiving account
-+ amount: 234.5 (number, required) - The amount to be transfered
++ from: 1 (number) - Account ID of source / sending account
++ to: 2 (number) - Account ID of destination / receiving account
++ amount: 234 (number, required) - The amount to be transfered (no decimals)
 + status(enum [string]) - The status of the transaction 
     + initiated 
     + committed 
     + pending 
     + completed 
     + cancelled 
+    + failed
++ processedAt: '1529511042' (string) - Date transaction is processed on blockchain
++ transactionHash: '0x3a65d73236085172405e6a0a481f21bd4dc9a97b62e720a98c92371aaf624bca' (string) - Hash of transaction on blockchain
 + statusDescription: 'Transaction Completed Successfully' (string) - Additional Information with the status
 + Meta   (array[Meta])  - Metadata
 
 
 ## TransactionResponse (Resource)
 + status: 'completed' (string) 
-+ amount: 234.5 (number, required) - The number of coins transferred
++ amount: 234 (number, required) - The number of coins transferred
 + statusDescription: 'Transaction Completed Successfully' (string) - Additional Information with the status
+
+
+
+pdate
