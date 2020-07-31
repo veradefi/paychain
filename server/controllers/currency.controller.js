@@ -58,6 +58,19 @@ function update(req, res, next) {
         .catch(e => next(e));
 }
 
+/**
+ * Search transaction
+ * @returns [Transaction]
+ */
+function search(req, res, next) {
+    const offset = parseInt(req.query.offset) || 0;
+    const limit  = parseInt(req.query.limit) || 50;
+
+    Currency.findAll({ limit, offset})
+        .then(currencies => res.json(currencies))
+        .catch(e => next(e));
+}
+
 function updateOrCreate(req, res, next){
     const query = req.body.query || {};
     const update = req.body.update;
@@ -79,4 +92,4 @@ function updateOrCreate(req, res, next){
     })
 };
 
-export default { load, get, create, update, updateOrCreate };
+export default { load, get, create, update, updateOrCreate, search };
