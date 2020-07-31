@@ -1,0 +1,278 @@
+FORMAT: 1A
+
+# Blockchain  API
+
+
+This documentation is subject to change. 
+
+This is a REST based API. It has unified URLs structure and uses HTTP response code to indicate API return status. The API uses built-in HTTP features used by most HTTP clients. JSON is returned by all API responses, including errors, although in the backend we convert responses to appropriate language-specific objects.
+
+## User Agent
+
+This API uses `User-Agent` and `Application-Id` headers to identify API consumer. `Application-Id` must contain an UUID that uniquely identifies a particular consumer installation.
+
+### Example Headers
+```
+User-Agent: curl/7.59.0
+
+```
+
+
+## HTTP Methods
+
+This API uses HTTP verbs (methods) as following:
+
++ `GET` - *Read* - used to **read** (or retrieve) a representation of a resource,
++ `POST` - *Create* - used to **create** new resources. In particular, it`s used to create subordinate resources.
++ `PUT` - *Update/Replace* - used for **update** capabilities, PUT-ing to a known resource URI with the request body containing the newly-updated representation of the original resource. On successful request, replaces identified resource with the request body.
++ `PATCH` - *Update/Modify* - used for **modify** capabilities. The PATCH request only needs to contain the changes to the resource, not the complete resource.
++ `DELETE` - *Delete* - used to **delete** a resource identified by a URI.
+
+## Localization
+
+This API uses `Accept-Language` header to identify the locale.
+
+`Accept-Language: en`
+
+This header SHOULD be present in every request. If not, API must use the **english** language/locale.
+
+## Media Type
+
+Where applicable this API must use the JSON media-type. Requests with a message-body are using plain JSON to set or update resource states.
+
+`Content-type: application/json` and `Accept: application/json` headers SHOULD be set on all requests if not stated otherwise.
+
+## Notational Conventions
+
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in [RFC2119](https://www.ietf.org/rfc/rfc2119).
+
+## Representation of Date and Time
+
+All exchange of date and time-related data must be done according to ISO 8601 standard and stored in UTC.
+
+When returning date and time-related data `YYYY-MM-DDThh:mm:ss.SSSZ` format must be used.
+
+
+## Status Codes and Errors
+
+This API uses HTTP status codes to communicate with the API consumer.
+
++ `200 OK` - Response to a successful GET, PUT, PATCH or DELETE.
++ `201 Created` - Response to a POST that results in a creation.
++ `204 No Content` - Response to a successful request that won`t be returning a body (like a DELETE request).
++ `400 Bad Request` - Malformed request; form validation errors.
++ `404 Not Found` - When a non-existent resource is requested.
++ `405 Method Not Allowed` - Method not allowed.
++ `406 Not Acceptable` - Could not satisfy the request Accept header.
++ `415 Unsupported Media Type` - Unsupported media type in request.
+
+### Error response
+
+This API returns both, machine-readable error codes and human-readable error messages in response body when an error is encountered.
+
+#### Example
+
+
+##### Generic Error
+
+```js
+{
+    "statusCode": 400,
+    "error": "Bad request",
+    "message": "Invalid address"
+}
+```
+
+#### Error Codes Dictionary
+
++ `10003` - Invalid query parameters
++ `10010` - Invalid Content-Type
++ `10011` - Invalid User-Agent
++ `10012` - Invalid or missing Application-Id
+
+## Versioning
+
+This API uses `Api-Version` header to identify requested version. Every **minor** version is backward compatible. However, **major** versions may introduce *breaking changes*.
+
+`Api-Version: 1.0.0`
+
+If this header is not present, then API is the newest available major release.
+
+
+# Group Account
+
+The account is the primary object within the payment system. 
+
+##  Accounts [/accounts/{account_id}]
+
+
+
+### Create an Account  [POST /accounts]
+
+Create new Account
+
+            
++ Response 200 (application/json)
+    + Attributes (newAccount)
+
+
+### Fetch Account Details [GET /accounts/{account_id}]
+
+Fetches the details of a single  account.
+
+
++ Parameters 
+    + account_id: '1234' (number) - ID of the account to be fetched
+
+
+            
++ Response 200 (application/json)
+    + Attributes (newAccount)
+
+
+# Group Transactions 
+
+
+## Transactions [/transactions]
+
+Transactions represent movement of funds between accounts.
+
+### Create a new Transaction [POST]
+
+
+Post a new transaction 
+
+
++ Request
+    + Attributes (Transaction)
+
++ Response 201 (application/json)
+    + Attributes (TransactionResponse)
+    
+    
++ Response 404
+
+### Fetch Transaction Details [GET /transactions/{transaction_id}]
+
+Fetches the details of a single transaction.
+
+
++ Parameters
+    + transaction_id: '12345' (string,required) - ID of the transaction to be fetched
+
+
+            
++ Response 200 (application/json)
+    + Attributes (Transaction)
+        
+
++ Response 404
+
+### Search all Transactions [GET /transactions]
+
+Search  all available transactions matching search terms.
+
++ Request      
+     + Parameters
+        + from: '0x12' (string) - Account ID of the transaction source
+        + to: '0x13' (string) - Account ID of the transaction destination
+        + dateFrom: '2018-01-01' (string) - The date to search from, inclusive from 00:00
+        + dateTo: '2018-02-01' (string) - The date to search to, inclusive to 23:59:59
+        + status: 'completed' (string) - Any valid transaction statuses
+        + amountFrom: 0 (number) - The amount to search from, inclusive
+        + amountTo: 100 (number) - The amount to search to, inclusive
+
+
++ Response 200 (application/json)
+    + Attributes (array[Transaction,Transaction,Transaction])
+
++ Response 404
+
+
+
+# Group Marketplace
+
+## Currencies [/currencies]
+
+###  Fetch currencies [GET]
+
+Fetches list of currencies supported
+
++ Response 200 (application/json)
+    + Attributes (array[Currency])
+        
+###  Create new currency [POST]
+
+Add a new currency
+
++ Request
+    + Attributes (Currency)
+    
++ Response 200 (application/json)
+    + Attributes (Currency)
+
+### Fetch Currency Details [GET /currencies/{currency_id}]
+
++ Parameters
+    + currency_id: 1 (number,required) - ID of the currency to be fetched
+    
++ Response 200 (application/json)
+    + Attributes (Currency)
+
++ Response 404
+
+# Data Structures
+
+## Resource (object)
++ id: 1 (number, fixed) - Sequential mysql unique id.
++ createdAt: `1529511042` (string) - Created Time.  
++ updatedAt: `1529511042` (string) - Last updated at.  
+
+## Account (Resource)
++ balance: 3000 (number,required) 
++ address: '0x908991b223b90e730d8274df43b741b61c77f47f' (string, fixed)
++ privateKey: 'b2930bb302058cbfdb815d28b6589808ecf5706c5c2253184dc0f807a1a6c932d6640254d7e637773bddf2470498b76fb38f22a4018774985fc81ff68ec501cbca27c4a0de0c0ea17ed17d0d614cca31' (string, required) - Encrypted private key of the account used to sign transactions
+
+## newAccount (Resource)
++ balance: 0 (number)
++ address: '0x908991b223b90e730d8274df43b741b61c77f47f' (string)
+
+
+## Meta
++ key
++ value
+
+## Currency (Resource)
++ id: 1 (number,required) 
++ Type(enum [string]) - The type of the Currency
+    + ERC20 
++ full_name: 'Freedom Coin' (string) - Full name of the currency
++ short_name: 'Coin' (string) - Short Name of the currency
++ symbol: FC (string) - Symbol of the currency
++ address: '0xcd3f20f740e359205e382b68b7da26bccb7e635b' (string) - Contract address of currency
+
+## Transaction (Resource)
++ from: 1 (number) - Account ID of source / sending account
++ to: 2 (number) - Account ID of destination / receiving account
++ amount: 234 (number, required) - The amount to be transfered (no decimals)
++ status(enum [string]) - The status of the transaction 
+    + initiated 
+    + committed 
+    + pending 
+    + completed 
+    + cancelled 
+    + failed
++ processedAt: '1529511042' (string) - Date transaction is processed on blockchain
++ transactionHash: '0x3a65d73236085172405e6a0a481f21bd4dc9a97b62e720a98c92371aaf624bca' (string) - Hash of transaction on blockchain
++ statusDescription: 'Transaction Completed Successfully' (string) - Additional Information with the status
++ Meta   (array[Meta])  - Metadata
+
+
+## TransactionResponse (Resource)
++ status: 'completed' (string) 
++ amount: 234 (number, required) - The number of coins transferred
++ statusDescription: 'Transaction Completed Successfully' (string) - Additional Information with the status
+
+
+
+pdate
