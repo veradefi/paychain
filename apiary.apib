@@ -83,13 +83,6 @@ This API returns both, machine-readable error codes and human-readable error mes
 }
 ```
 
-#### Error Codes Dictionary
-
-+ `10003` - Invalid query parameters
-+ `10010` - Invalid Content-Type
-+ `10011` - Invalid User-Agent
-+ `10012` - Invalid or missing Application-Id
-
 ## Versioning
 
 This API uses `Api-Version` header to identify requested version. Every **minor** version is backward compatible. However, **major** versions may introduce *breaking changes*.
@@ -144,7 +137,7 @@ Post a new transaction
 
 
 + Request
-    + Attributes (Transaction)
+    + Attributes (TransactionRequest)
 
 + Response 201 (application/json)
     + Attributes (TransactionResponse)
@@ -206,7 +199,7 @@ Fetches list of currencies supported
 Add a new currency
 
 + Request
-    + Attributes (Currency)
+    + Attributes (CurrencyRequest)
     
 + Response 200 (application/json)
     + Attributes (Currency)
@@ -234,7 +227,7 @@ Add a new currency
 + privateKey: 'b2930bb302058cbfdb815d28b6589808ecf5706c5c2253184dc0f807a1a6c932d6640254d7e637773bddf2470498b76fb38f22a4018774985fc81ff68ec501cbca27c4a0de0c0ea17ed17d0d614cca31' (string, required) - Encrypted private key of the account used to sign transactions
 
 ## newAccount (Resource)
-+ balance: 0 (number)
++ balance: 0 (string)
 + address: '0x908991b223b90e730d8274df43b741b61c77f47f' (string)
 
 
@@ -243,7 +236,14 @@ Add a new currency
 + value
 
 ## Currency (Resource)
-+ id: 1 (number,required) 
++ Type(enum [string]) - The type of the Currency
+    + ERC20 
++ full_name: 'Freedom Coin' (string) - Full name of the currency
++ short_name: 'Coin' (string) - Short Name of the currency
++ symbol: FC (string) - Symbol of the currency
++ address: '0xcd3f20f740e359205e382b68b7da26bccb7e635b' (string) - Contract address of currency
+
+## CurrencyRequest
 + Type(enum [string]) - The type of the Currency
     + ERC20 
 + full_name: 'Freedom Coin' (string) - Full name of the currency
@@ -255,6 +255,7 @@ Add a new currency
 + from: 1 (number) - Account ID of source / sending account
 + to: 2 (number) - Account ID of destination / receiving account
 + amount: 234 (number, required) - The amount to be transfered (no decimals)
++ currency_id: 1 (number) - Currency id (Default 1) 
 + status(enum [string]) - The status of the transaction 
     + initiated 
     + committed 
@@ -267,12 +268,16 @@ Add a new currency
 + statusDescription: 'Transaction Completed Successfully' (string) - Additional Information with the status
 + Meta   (array[Meta])  - Metadata
 
+## TransactionRequest
++ from: 1 (number, required)
++ to: 1 (number, required)
++ currency_id: 1 (number)
++ amount: 234 (number, required) - The number of coins transferred
+
 
 ## TransactionResponse (Resource)
-+ status: 'completed' (string) 
-+ amount: 234 (number, required) - The number of coins transferred
-+ statusDescription: 'Transaction Completed Successfully' (string) - Additional Information with the status
-
-
-
-pdate
++ status: 'initiated' (string) 
++ from: 1 (number)
++ to: 1 (number)
++ currency_id: 1 (number)
++ amount: 234 (number) - The number of coins transferred
