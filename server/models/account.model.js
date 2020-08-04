@@ -6,7 +6,7 @@ import { getBalance } from '../lib/web3';
 module.exports = (sequelize, DataTypes) => {
     const Account = sequelize.define('Account', {
         balance: {
-            type: DataTypes.DECIMAL(40,0),
+            type: DataTypes.STRING,
             allowNull: false,
             defaultValue: 0,
         },

@@ -8,7 +8,7 @@ import BN from 'bn.js'
 module.exports = (sequelize, DataTypes) => {
     const Transaction = sequelize.define('Transaction', {
         amount: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.STRING,
             allowNull: false,
             defaultValue: 0,
         },
@@ -47,6 +47,11 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: true,
         },
     }, {
+        getterMethods: {
+            amount() {
+                return this.getDataValue('amount').toString();
+            },
+        },
         validate: {
             fromAccountExists: function (next) {
                 sequelize.models.Account.findOne({
@@ -152,6 +157,13 @@ module.exports = (sequelize, DataTypes) => {
             },
         }
     });
+  
+    // Transaction.prototype.toJSON = function () {
+    //     const transaction = Object.assign({}, this.get());
+
+    //     transaction.amount = transaction.amount.toString();
+    //     return transaction;
+    // };
 
     Transaction.belongsTo(sequelize.models.Account, {foreignKey: 'from', targetKey: 'id', as: 'fromAcc', onDelete: 'cascade'});
     Transaction.belongsTo(sequelize.models.Account, {foreignKey: 'to', targetKey: 'id', as: 'toAcc', onDelete: 'cascade'});
