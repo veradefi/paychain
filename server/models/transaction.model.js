@@ -157,13 +157,6 @@ module.exports = (sequelize, DataTypes) => {
             },
         }
     });
-  
-    // Transaction.prototype.toJSON = function () {
-    //     const transaction = Object.assign({}, this.get());
-
-    //     transaction.amount = transaction.amount.toString();
-    //     return transaction;
-    // };
 
     Transaction.belongsTo(sequelize.models.Account, {foreignKey: 'from', targetKey: 'id', as: 'fromAcc', onDelete: 'cascade'});
     Transaction.belongsTo(sequelize.models.Account, {foreignKey: 'to', targetKey: 'id', as: 'toAcc', onDelete: 'cascade'});

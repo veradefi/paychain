@@ -27,14 +27,6 @@ const add = (queueType, transaction) => {
     job.on('start', () => {
         console.log('Queue job started', job.id);
     });
-
-    // job.on('complete', (result) => {
-    //     console.log('Job completed with data ');
-    // });
-
-    // job.on('failed', (errorMessage) => {
-    //     console.log(`Job failed ${errorMessage}`);
-    // });
 };
 
 const setStatus = (transaction, status, params) => {

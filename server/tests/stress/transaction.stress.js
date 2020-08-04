@@ -4,9 +4,7 @@ import request from 'supertest-as-promised';
 import httpStatus from 'http-status';
 import chai, { expect } from 'chai';
 import config from '../../../config/config';
-import { getAllAccounts, web3 } from '../../lib/web3';
 
-const loadtest = require('loadtest');
 const jsonAccounts = require('../../json/accounts.json');
 
 chai.config.includeStack = true;
@@ -19,10 +17,6 @@ let tokenContract = {
 
 describe('## Transaction stress tests', () => {
     describe('# Deploy token and balance transfer', () => {
-        before((done) => {
-            done();
-        });
-
         after((done) => {
             const currency = {
                 query: {
@@ -62,19 +56,13 @@ describe('## Transaction stress tests', () => {
 
 
     describe('# Create api accounts', () => {
-        after((done) => {
-            done();
-            // startLoadTesting(done);
-        });
-
         for (let i = 0; i < jsonAccounts.length; i += 1) {
             const account = {
-                balance: 0,
                 address: jsonAccounts[i].address,
                 privateKey: jsonAccounts[i].privateKey,
             };
 
-            it('should create 10 api accounts', (done) => {
+            it('should create an api account', (done) => {
                 request(config.api_url)
                     .post('/api/accounts')
                     .send(account)
@@ -89,51 +77,18 @@ describe('## Transaction stress tests', () => {
     });
 });
 
-// function startLoadTesting(done){
-//     const promises = [];
-//     const maxRequests = 1000;
-//     const requestsPerSecond = 100;
-
-//     const options = {
-//         url: 'http://localhost:4000/api/transactions',
-//         maxRequests: maxRequests,
-//         concurrency: 1,
-//         method: 'POST',
-//         requestsPerSecond: requestsPerSecond,
-//         headers: {
-//             'content-type': 'application/json'
-//         },
-//         contentType: 'application/json',
-//         body: {
-//             amount: 100,
-//             to: 2,
-//             from: 1,
-//             currency_id: 1,
-//         },
-//         statusCallback: (error, result, latency) => {
-//             const promise = waitForTransactionConfirmation(JSON.parse(result.body), maxRequests);
-//             promises.push(promise);
-//         }
-//     };
-
-//     loadtest.loadTest(options, function(error, result)
-//     {   
-//         if (error)
-//         {
-//             done(error);
-//             return console.error('Got an error: %s', error);
-//         }
-
-//         Promise.all(promises).then((res) => {
-//             console.log('Tests run successfully');
-//             done();
-//         }).catch(done)
-//     });
-// }
-
 function getRandom (minimum, maximum) {
     return Math.floor(Math.random() * (maximum - minimum + 1)) + minimum;
 };
+
+function getRandomAccountId() {
+    const randomNumber = getRandom(0, apiAccounts.length - 1);
+    const randomAccount = apiAccounts[randomNumber];
+
+    if (randomAccount) {
+        return randomAccount.id;
+    }
+}
 
 function sendTransactionRequests(size = 100) {
     let transactions = [];
@@ -141,8 +96,6 @@ function sendTransactionRequests(size = 100) {
     for (let i = 0 ; i < size ; i++ ) {
         const transaction = {
             amount: '100',
-            to: getRandom(1,10),
-            from: getRandom(1,10),
             currency_id: 1,
         };
 
@@ -153,6 +106,8 @@ function sendTransactionRequests(size = 100) {
 
     transactions.map((transaction) => {
         it('should create a transaction', (done) => {
+            transaction.from = getRandomAccountId();
+            transaction.to = getRandomAccountId();
             request(config.api_url)
                 .post('/api/transactions')
                 .send(transaction)
@@ -170,48 +125,6 @@ function sendTransactionRequests(size = 100) {
         });
     });
 };
-
-// function sendBulkTransactionRequests(size = 100) {
-//     let transactions = [];
-
-//     for (let i = 0 ; i < size ; i++ ) {
-//         const transaction = {
-//             amount: 100,
-//             to: getRandom(1,10),
-//             from: getRandom(1,10),
-//             currency_id: 1,
-//         };
-
-//         transactions.push(transaction);
-//     }
-
-//     const promises = [];
-//     it('should create transactions in bulk', (done) => {
-
-//         transactions.map((transaction) => {
-//             request(app)
-//                 .post('/api/transactions')
-//                 .send(transaction)
-//                 .expect(httpStatus.OK)
-//                 .then((res) => {
-//                     expect(res.body.amount).to.equal(transaction.amount);
-//                     expect(res.body.to).to.equal(transaction.to);
-//                     expect(res.body.from).to.equal(transaction.from);
-//                     expect(res.body.status).to.equal('initiated');
-
-//                     const p = waitForTransactionConfirmation(res.body, transactions.length);
-//                     promises.push(p);
-
-//                     if (promises.length >= transactions.length) {
-//                         Promise.all(promises).then((res) => {
-//                             done();
-//                         }).catch(done)
-//                     }
-//                 })
-//                 .catch(done);
-//         });
-//     });
-// };
 
 function waitForTransactionConfirmation(transaction, length) { 
     return new Promise((fulfill, reject) => {
@@ -231,10 +144,6 @@ function waitForTransactionConfirmation(transaction, length) {
 };
 
 describe('## Transaction APIs', () => {
-    after(() => {
-        // db.Transaction.drop();
-    });
-
     describe('# POST /api/transactions', () => {
         sendTransactionRequests(config.test.tx_per_sec);
 
