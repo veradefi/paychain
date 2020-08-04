@@ -7,7 +7,7 @@ import { version } from '../../package.json';
 const router = express.Router(); // eslint-disable-line new-cap
 
 router.get('/', (req, res) =>
-  res.send('API Version v' + version)
+  res.send('API Version v' + version + ' <a href="https://app.apiary.io/fpblockchain/editor">docs</a>') 
 );
 
 /** GET /health-check - Check service health */

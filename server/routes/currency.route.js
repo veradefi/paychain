@@ -6,7 +6,9 @@ const router = express.Router(); // eslint-disable-line new-cap
 router.route('/')
 
     /** POST /api/currency - Create new currency */
-    .post(currencyCtrl.create);
+    .post(currencyCtrl.create)
+
+    .get(currencyCtrl.search)
 
 router.route('/upsert')
 

@@ -8,7 +8,7 @@ import BN from 'bn.js'
 module.exports = (sequelize, DataTypes) => {
     const Transaction = sequelize.define('Transaction', {
         amount: {
-            type: DataTypes.DECIMAL(40,0),
+            type: DataTypes.STRING,
             allowNull: false,
             defaultValue: 0,
         },
@@ -47,6 +47,11 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: true,
         },
     }, {
+        getterMethods: {
+            amount() {
+                return this.getDataValue('amount').toString();
+            },
+        },
         validate: {
             fromAccountExists: function (next) {
                 sequelize.models.Account.findOne({

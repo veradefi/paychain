@@ -6,7 +6,7 @@ import { getBalance } from '../lib/web3';
 module.exports = (sequelize, DataTypes) => {
     const Account = sequelize.define('Account', {
         balance: {
-            type: DataTypes.DECIMAL(40,0),
+            type: DataTypes.STRING,
             allowNull: false,
             defaultValue: 0,
         },
@@ -39,22 +39,27 @@ module.exports = (sequelize, DataTypes) => {
             },
         },
         hooks: {
-            afterCreate: function(account, options) {
-                sequelize.models.Currency.findOne({
-                    where: {
-                        symbol: 'DC',
-                    },
-                })
-                .then((currency) => {
-                    getBalance(currency.address, account.address)
-                        .then((balance) => {
-                            account.updateAttributes({
-                                balance: balance,
+            beforeCreate: function(account, options) {
+                return new Promise((resolve, reject) => {
+                    sequelize.models.Currency.findOne({
+                        where: {
+                            symbol: 'DC',
+                        },
+                    })
+                    .then((currency) => {
+                        getBalance(currency.address, account.address)
+                            .then((balance) => {
+                                account.balance = balance;
+                                resolve(account)
                             })
-                            .catch((err) => console.error(err));
-                        });
-                })
-                .catch(console.error);
+                            .catch((err) => {
+                                console.log(err)
+                                // reject(err)
+                                resolve(account);
+                            });
+                    })
+                    .catch(reject);
+                });
             }
         }
     });
@@ -63,6 +68,7 @@ module.exports = (sequelize, DataTypes) => {
         const account = Object.assign({}, this.get());
 
         delete account.privateKey;
+        account.balance = account.balance.toString();
         return account;
     };
 

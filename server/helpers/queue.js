@@ -28,14 +28,6 @@ const add = (queueType, transaction, delay = 0) => {
     job.on('start', () => {
         console.log('Queue job started', job.id);
     });
-
-    job.on('complete', (result) => {
-        console.log('Job completed with data ');
-    });
-
-    // job.on('failed', (errorMessage) => {
-    //     console.log(`Job failed ${errorMessage}`);
-    // });
 };
 
 const setStatus = (transaction, status, params) => {
@@ -95,7 +87,7 @@ const sendTransaction = (transaction, done) => {
             }).then(() => {
                 // done(error);
                 if (shouldRetry(error)) {
-                  add(config.queue.name, transaction, 30000);
+                  add(config.queue.name, transaction, 10000);
                 }
             });
         });

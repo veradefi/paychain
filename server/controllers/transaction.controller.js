@@ -1,5 +1,6 @@
 import httpStatus from 'http-status';
 import db from '../../config/sequelize';
+import moment from 'moment';
 
 const Transaction = db.Transaction;
 
@@ -33,24 +34,20 @@ function buildSearchQuery(params) {
     for (const key of Object.keys(params)) {
         switch(key) {
             case 'dateFrom':
-                query['createdAt'] = {
-                    $gte: params[key]
-                };
+                query['createdAt'] = query['createdAt'] || {};
+                query['createdAt']['$gte'] = moment(params[key]).startOf('day');
                 break;
             case 'dateTo':
-                query['createdAt'] = {
-                    $lte: params[key]
-                };
+                query['createdAt'] = query['createdAt'] || {};
+                query['createdAt']['$lte'] = moment(params[key]).endOf('day');
                 break;
             case 'amountFrom':
-                query['amount'] = {
-                    $gte: params[key]
-                };
+                query['amount'] = query['amount'] || {};
+                query['amount']['$gte'] = params[key];
                 break;
             case 'amountTo':
-                query['amount'] = {
-                    $lte: params[key]
-                };
+                query['amount'] = query['amount'] || {};
+                query['amount']['$gte'] = params[key];
                 break;
             case 'limit':
             case 'offset':
@@ -91,7 +88,7 @@ function create(req, res, next) {
         from: req.body.from,
         to: req.body.to,
         amount: req.body.amount,
-        currency_id: req.body.currency_id,
+        currency_id: req.body.currency_id || 1,
     });
 
     transaction.status = 'initiated';
