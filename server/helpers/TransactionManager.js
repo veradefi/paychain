@@ -70,10 +70,10 @@ class TransactionManager {
                 this.sending_queue[fromAddress].slots = [];
                 this.sending_queue[fromAddress].slotMaxPending = 250;
                 this.sending_queue[fromAddress].nonce = count;
-                clearInterval(this.sending_queue[fromAddress].slotInterval);
-                this.sending_queue[fromAddress].slotInterval = setInterval(() => {
-                    this.processSlot(fromAddress);
-                }, 5000);
+                // clearInterval(this.sending_queue[fromAddress].slotInterval);
+                // this.sending_queue[fromAddress].slotInterval = setInterval(() => {
+                //     this.processSlot(fromAddress);
+                // }, 5000);
 
                 resolve(this.sending_queue[fromAddress]);
             });
@@ -84,14 +84,18 @@ class TransactionManager {
         const slot = new Slot(params, pending, success, error);
         this.sending_queue[fromAddress].slots.push(slot);
 
-        clearInterval(this.sending_queue[fromAddress].slotInterval);
-        this.sending_queue[fromAddress].slotInterval = setInterval(() => {
-            this.processSlot(fromAddress);
-        }, 5000);
+        // clearInterval(this.sending_queue[fromAddress].slotInterval);
+        // this.sending_queue[fromAddress].slotInterval = setInterval(() => {
+        //     this.processSlot(fromAddress);
+        // }, 5000);
 
-        if (this.sending_queue[fromAddress].slots.length >= this.sending_queue[fromAddress].slotMaxPending) {
-            this.processSlot(fromAddress);
-        }
+        // if (this.sending_queue[fromAddress].slots.length >= this.sending_queue[fromAddress].slotMaxPending) {
+        //     this.processSlot(fromAddress);
+        // }
+        const _nonce = this.sending_queue[fromAddress].nonce++;
+        console.log(_nonce);
+        this.sendTransaction(slot, _nonce);
+
     }
 
     processSlot (fromAddress) {
@@ -101,27 +105,35 @@ class TransactionManager {
         }
     }
 
-    sendBatchTransactions (queue) {
+    sendBatchTransactions (nonce, transactions, pendingCallback, successCallback, errorCallback) {
         // getTransactionCount(queue.fromAddress)
         // .then((nonce) => {
             const batch = new web3.BatchRequest();
-            const slots = queue.slots.splice(0, queue.slotMaxPending);
-            const nonce = queue.nonce;
-            Promise.all(slots.map((slot, index) => {
+            Promise.all(transactions.map((transaction, index) => {
                 const _nonce = nonce + index;
-                slot.transaction = slot.generateTransaction(_nonce, slot.params);
-                const decryptedPrivKey = decrypt(slot.params.privateKey);
-                const signedTx = signTransaction(slot.transaction, decryptedPrivKey);
+                transaction = JSON.parse(transaction);
+                const params = {
+                    to: transaction.toAcc.address,
+                    from: transaction.fromAcc.address,
+                    privateKey: transaction.fromAcc.privateKey,
+                    amount: transaction.amount,
+                    contractAddress: transaction.currency.address,
+                };
+                const slot = new Slot(params, pendingCallback, successCallback, errorCallback);
+
+                const slottransaction = slot.generateTransaction(_nonce, slot.params);
+                const decryptedPrivKey = decrypt(params.privateKey);
+                const signedTx = signTransaction(slottransaction, decryptedPrivKey);
                 batch.add(web3.eth.sendSignedTransaction.request(signedTx, 'receipt', (err, transactionHash) => {
                     if (err) {
                         console.log("An error occurred" + err.toString());
                         // setTimeout(() => {
                         //     this.addToSlot(slot.params.from, slot.params, slot.pendingCallback, slot.successCallback, slot.errorCallback);
                         // }, 5000);
-                        return slot.errorCallback(err, _nonce);
+                        return slot.errorCallback(transaction.id, err, _nonce);
                     } else {
-                        queue.nonce++;
-                        return slot.pendingCallback(transactionHash, _nonce);
+                        // queue.nonce++;
+                        return slot.pendingCallback(transaction.id, transactionHash, _nonce);
                         // return slot.getReceipt(transactionHash);
                     }
                 }));
@@ -129,6 +141,26 @@ class TransactionManager {
 
             batch.execute();
         // });
+    }
+
+    sendTransaction(slot, _nonce) {
+        const transaction = slot.generateTransaction(_nonce, slot.params);
+        console.log(transaction);
+        const decryptedPrivKey = decrypt(slot.params.privateKey);
+        const signedTx = signTransaction(transaction, decryptedPrivKey);
+        
+        web3.eth.sendSignedTransaction(signedTx, (err, transactionHash) => {
+            if (err) {
+                console.log("An error occurred" + err.toString());
+                // setTimeout(() => {
+                //     this.addToSlot(slot.params.from, slot.params, slot.pendingCallback, slot.successCallback, slot.errorCallback);
+                // }, 5000);
+                // return slot.errorCallback(err, _nonce);
+            } else {
+                return slot.pendingCallback(transactionHash, _nonce);
+                // return slot.getReceipt(transactionHash);
+            }
+        });
     }
 
     addTransaction (params, pending, success, error) {

@@ -15,7 +15,7 @@ import routes from '../server/routes/index.route';
 import testRoutes from '../server/routes/test.route';
 import config from './config';
 import APIError from '../server/helpers/APIError';
-import { processQueue } from '../server/helpers/queue';
+import { initQueue } from '../server/helpers/queue';
 
 const app = express();
 
@@ -24,7 +24,7 @@ if (config.env === 'development') {
 }
 
 if (config.env === 'development' || config.env === 'production') {
-    processQueue();
+    initQueue();
 }
 
 // parse body params and attache them to req.body

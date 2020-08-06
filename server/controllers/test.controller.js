@@ -121,8 +121,10 @@ function init(req, res, next) {
                     result = new BN(result);
                     const promises = [];
                     for (let i = 1; i < accounts.length; i++) {
-                        const p = tokenContract.methods.transfer(accounts[i], result.div(new BN(10))).send({
-                            from: tokenOwner
+                        const p = tokenContract.methods.transfer(accounts[i].address, result.div(new BN(10))).send({
+                            from: tokenOwner,
+                            gas: 150000,
+                            gasPrice: '3000000000'
                         })
                         promises.push(p);
                     }
@@ -144,7 +146,7 @@ function init(req, res, next) {
                 })
                 .catch((err) => {
                     console.error(err);
-                    // next(err);
+                    next(err);
                 })
         })
         .catch((err) => {
