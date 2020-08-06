@@ -60,6 +60,9 @@ app.use('/api', routes);
 
 app.use('/tests', testRoutes);
 
+app.use('/', (req, res) => {
+    res.redirect(req.baseUrl + '/api');
+});
 // if error is not an instanceOf APIError, convert it.
 app.use((err, req, res, next) => {
     if (err instanceof expressValidation.ValidationError) {
