@@ -7,6 +7,11 @@ import BN from 'bn.js'
  */
 module.exports = (sequelize, DataTypes) => {
     const Transaction = sequelize.define('Transaction', {
+        id: {
+            primaryKey: true,
+            type: DataTypes.UUID,
+            defaultValue: DataTypes.UUIDV4
+        },
         amount: {
             type: DataTypes.STRING,
             allowNull: false,
@@ -47,6 +52,7 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: true,
         },
     }, {
+        tableName: 'transactions',
         getterMethods: {
             amount() {
                 return this.getDataValue('amount').toString();

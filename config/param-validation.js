@@ -3,10 +3,9 @@ import Joi from 'joi';
 export default {
     createTransaction: {
         body: {
-            to: Joi.number().integer().required(),
-            from: Joi.number().integer().required(),
-            amount: Joi.required(),
-            currency_id: Joi.number().integer().default(1),
+            to: Joi.required(),
+            from: Joi.required(),
+            amount: Joi.required()
         },
     },
 };
