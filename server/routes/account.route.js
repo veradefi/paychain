@@ -6,7 +6,11 @@ const router = express.Router(); // eslint-disable-line new-cap
 router.route('/')
 
     /** POST /api/accounts - Create new account */
-    .post(accountCtrl.create);
+    .post(accountCtrl.create)
+
+    /** GET /api/accounts - Get account list */
+
+    .get(accountCtrl.search);
 
 router.route('/:accountId')
 

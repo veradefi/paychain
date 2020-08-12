@@ -30,6 +30,19 @@ function get(req, res) {
 }
 
 /**
+ * Get Accounts
+ * @returns [Account]
+ */
+function search(req, res, next) {
+    const offset = parseInt(req.query.offset) || 0;
+    const limit  = parseInt(req.query.limit) || 10;
+
+    Account.findAll({ limit, offset })
+        .then(accounts => res.json(accounts))
+        .catch(e => next(e));
+}
+
+/**
  * Create new account
  * @returns {Account}
  */
@@ -46,4 +59,4 @@ function create(req, res, next) {
 }
 
 
-export default { load, get, create };
+export default { load, get, create, search };

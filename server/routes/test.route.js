@@ -18,9 +18,4 @@ router.route('/start')
     /** POST /api/tests - Start testcases */
     .post(testCtrl.start);
 
-router.route('/init')
-  
-    /** POST api/tests/init - Initialize testcases */
-    .post(testCtrl.init);
-
 export default router;
