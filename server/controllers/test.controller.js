@@ -125,7 +125,7 @@ function init(req, res, next) {
                             from: tokenOwner,
                             gas: 150000,
                             gasPrice: '3000000000'
-                        })
+                        });
                         promises.push(p);
                     }
 

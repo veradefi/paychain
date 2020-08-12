@@ -1,4 +1,5 @@
-[
+{
+  "accounts": [
     {
         "address": "0x908991b223b90e730d8274df43b741b61c77f47f",
         "privateKey": "0x28777a5aa77c217e4a46ce53c0beb1cb588dc20d7dad1a02dd9d4d19b0e10fb0"
@@ -31,4 +32,6 @@
         "address": "0xceC97afa20e8D811A502BAa9001030481224efbC",
         "privateKey": "0x96f9b01e66da18f1b964277bc3498e5a5306f2a662919f1c0ffc663014f59d06"
     }
-]
+  ],
+  "token_address": ""
+}

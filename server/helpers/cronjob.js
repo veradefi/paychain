@@ -104,6 +104,9 @@ pendingTask.start();
 
 // startProcessing();
 
-processStuckTransactions();
-processPendingTransactions();
+setTimeout(() => {
+    processStuckTransactions();
+    processPendingTransactions();
+}, 1000);
+
 export default cron;

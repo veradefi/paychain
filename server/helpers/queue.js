@@ -1,11 +1,15 @@
 import kue from 'kue';
+import redis from 'redis';
+import bluebird from 'bluebird';
 import config from '../../config/config'
 import TransactionManager from './TransactionManager';
 import { shouldRetry } from './helpers';
-import redis from 'redis';
 import { getTransactionCount, signTransaction, web3 } from '../lib/web3';
+import "babel-polyfill";
+
 
 const client = redis.createClient();
+bluebird.promisifyAll(redis);
 
 const queue = kue.createQueue({
   prefix: 'q',
@@ -37,9 +41,9 @@ const add = (queueType, transaction, delay = 0) => {
     // });
 };
 
-const setStatus = (transaction_id, status, params) => {
+const setStatus = (transaction, status, params) => {
     return new Promise((resolve, reject) => {
-        Model.findOne({ where: { id: transaction_id } })
+        Model.findOne({ where: { id: transaction.id } })
             .then((newTransaction) => {
                 if (newTransaction) {
                     params = params || {};
@@ -105,59 +109,58 @@ const sendTransaction = (transaction, done) => {
 
 const processQueue = () => {
 
-    client
-        .watch("transactions:0x908991b223b90e730d8274df43b741b61c77f47f", function( err ){
+    const default_address = process.env.DEFAULT_ADDRESS;
 
-            client.get('transactions:0x908991b223b90e730d8274df43b741b61c77f47f', (err, nonce) => {
-                nonce = parseInt(nonce);
-                console.log("nonce", nonce)
-                client.lrange('transactions', 0, 999, (err, transactions) => {
-                    if (err) throw err;
-                    client
-                        .multi()
-                        .set("transactions:0x908991b223b90e730d8274df43b741b61c77f47f", parseInt(nonce + transactions.length))
-                        .ltrim('transactions', 999, 10000000000, redis.print)
-                        .exec(function(err, results) {
-                            if(err) throw err;
-                            
-                            if(results !== null) {
-                                transactionManager.sendBatchTransactions(parseInt(nonce), transactions, 
-                                    (transaction_id, transactionHash, nonce) => {
-                                        setStatus(transaction_id, 'pending', {
-                                            statusDescription: '',
-                                            transactionHash: transactionHash,
-                                            store_id: nonce,
-                                            processedAt: new Date(),
-                                        }).then(() => {
-                                            // done(null, transactionHash);
-                                        });
-                                    }, (transaction_id, receipt) => {
-                                        // console.log("receipt", JSON.stringify(receipt));
-                                        setStatus(transaction_id, 'completed', {
-                                            statusDescription: JSON.stringify(receipt),
-                                        }).then(() => {
-                                            // done(null, receipt);
-                                        });
-                                    }, (transaction_id, error, nonce) => {
-                                        setStatus(transaction_id, 'failed', {
-                                            statusDescription: error.toString()
-                                        }).then(() => {
-                                            // done(error);
-                                            if (shouldRetry(error)) {
-                                                initQueue();
-                                            }
-                                        });
-                                    });
-                            }
-                        });
+    client.watch(config.queue.name + ":" + default_address, async ( err ) => {
+
+        const nonce = await client.getAsync(config.queue.name + ":" + default_address);
+        const nonceInt = parseInt(nonce);
+        console.log("nonce", nonce)
+
+        const transactions = await client.lrangeAsync(config.queue.name, 0, 99);
+        const multi        = client.multi();
+        const setCommand   = multi.set(config.queue.name + ":" + default_address, parseInt(nonceInt + transactions.length));
+        const trimCommand  = multi.ltrim(config.queue.name, 99, 10000000000, redis.print);
+        const results      = await multi.execAsync();
+
+        if (results !== null && transactions.length > 0) {
+
+            transactionManager.sendBatchTransactions(nonceInt, transactions, 
+                (transaction, transactionHash, nonce) => {
+                    console.log(transactionHash);
+                    setStatus(transaction, 'pending', {
+                        statusDescription: '',
+                        transactionHash: transactionHash,
+                        store_id: nonce,
+                        processedAt: new Date(),
+                    }).then(() => {
+                        // done(null, transactionHash);
+                    });
+                }, (transaction, receipt) => {
+                    // console.log("receipt", JSON.stringify(receipt));
+                    setStatus(transaction, 'completed', {
+                        statusDescription: JSON.stringify(receipt),
+                    }).then(() => {
+                        // done(null, receipt);
+                    });
+                }, (transaction, error, nonce) => {
+                    console.log(error.toString());
+                    setStatus(transaction, 'failed', {
+                        statusDescription: error.toString()
+                    }).then(() => {
+                        // done(error);
+                        if (shouldRetry(error)) {
+                            add(config.queue.name, transaction);
+                        }
+                    });
                 });
-            });
-        });
+        }
+    });
 };
 
 const startQueue = () => {
     setInterval(() => {
-        processQueue();
+        // processQueue();
     }, 10000);
 };
 
@@ -166,27 +169,19 @@ const stopQueue = () => {
 };
 
 const initQueue = () => {
-    console.log('processing queue');
-    // queue.process(config.queue.name, (job, done) => {
-    //     sendTransaction(job.data, done);
-    // });
-
-    client.watch("transactions:0x908991b223b90e730d8274df43b741b61c77f47f", function( err ){
+    const default_address = process.env.DEFAULT_ADDRESS;
+    client.watch(config.queue.name + ":" + default_address, async ( err )=> {
         if(err) throw err;
 
-        getTransactionCount('0x908991b223b90e730d8274df43b741b61c77f47f').then((count) => {
-            client
-                .multi()
-                .set("transactions:0x908991b223b90e730d8274df43b741b61c77f47f", count)
-                .exec(function(err, results) {
-                    
-                    if(err) throw err;
-                    
-                    if(results !== null) {
-                        startQueue();
-                    }
-                });
-        });
+        const count    = await getTransactionCount(default_address);
+        const multi    = await client.multi().set(config.queue.name + ":" + default_address, parseInt(count));
+        const results  = await multi.execAsync();
+        if (results !== null) {
+            // Start first batch of the queue immediately
+            processQueue();
+
+            startQueue();
+        }
     });
 
 };

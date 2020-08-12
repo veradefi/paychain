@@ -1,3 +1,4 @@
+import config from '../../config/config';
 
 const shouldRetry = (error) =>{
     if( error.message.search('out of gas') >= 0 ) return true;   
@@ -12,4 +13,8 @@ const shouldRetry = (error) =>{
     return false;    
 };
 
-export default { shouldRetry }
+const isLocalNode = (providerUrl) => {
+    return providerUrl && providerUrl.indexOf('127.0.0.1') >= 0 && config.env !== 'production';
+};
+
+export default { shouldRetry, isLocalNode }

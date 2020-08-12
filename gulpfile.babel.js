@@ -5,6 +5,7 @@ import del from 'del';
 import runSequence from 'run-sequence';
 
 const plugins = gulpLoadPlugins();
+const polyfill = './node_modules/gulp-babel/node_modules/babel-core/browser-polyfill.js'
 
 const paths = {
     js: ['./**/*.js', '!dist/**', '!node_modules/**', '!coverage/**'],
@@ -40,10 +41,10 @@ gulp.task('copy-json', () =>
 
 // Compile ES6 to ES5 and copy to dist
 gulp.task('babel', () =>
-    gulp.src([...paths.js, '!gulpfile.babel.js'], { base: '.' })
+    gulp.src([...paths.js, '!gulpfile.babel.js', polyfill], { base: '.' })
         .pipe(plugins.newer('dist'))
         .pipe(plugins.sourcemaps.init())
-        .pipe(plugins.babel())
+        .pipe(plugins.babel({}))
         .pipe(plugins.sourcemaps.write('.', {
             includeContent: false,
             sourceRoot(file) {

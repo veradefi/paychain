@@ -41,6 +41,10 @@ const envVarsSchema = Joi.object({
         .default(''),
     SOCKET_PORT: Joi.number()
         .default(1337),
+    DEFAULT_ADDRESS: Joi.string().allow('')
+        .default(''),
+    CONTRACT_ADDRESS: Joi.string().allow('')
+        .default(''),
 }).unknown()
     .required();
 
@@ -71,6 +75,8 @@ const config = {
     web3: {
         provider_url: envVars.PROVIDER_URL,
         entropy: envVars.ENTROPY,
+        contract_address: envVars.CONTRACT_ADDRESS,
+        default_address: envVars.DEFAULT_ADDRESS,
     },
     test: {
         tx_per_sex: envVars.TX_PER_SEC,

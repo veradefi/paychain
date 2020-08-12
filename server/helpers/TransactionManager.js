@@ -130,10 +130,10 @@ class TransactionManager {
                         // setTimeout(() => {
                         //     this.addToSlot(slot.params.from, slot.params, slot.pendingCallback, slot.successCallback, slot.errorCallback);
                         // }, 5000);
-                        return slot.errorCallback(transaction.id, err, _nonce);
+                        return slot.errorCallback(transaction, err, _nonce);
                     } else {
                         // queue.nonce++;
-                        return slot.pendingCallback(transaction.id, transactionHash, _nonce);
+                        return slot.pendingCallback(transaction, transactionHash, _nonce);
                         // return slot.getReceipt(transactionHash);
                     }
                 }));
