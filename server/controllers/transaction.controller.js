@@ -87,14 +87,19 @@ function create(req, res, next) {
     const transaction = Transaction.build({
         from: req.body.from,
         to: req.body.to,
-        amount: req.body.amount,
-        currency_id: req.body.currency_id || 1,
+        amount: req.body.amount
     });
 
-    transaction.status = 'initiated';
-    transaction.save()
-        .then(savedTransaction => res.status(201).json(savedTransaction))
-        .catch(e => next(e));
+    db.Currency.findOne({}).then((currency) => {
+        if (currency) {
+            transaction.currency_id = currency.id;
+        }
+
+        transaction.status = 'initiated';
+        transaction.save()
+            .then(savedTransaction => res.status(201).json(savedTransaction))
+            .catch(e => next(e));
+    }).catch(e => next(e));
 }
 
 /**

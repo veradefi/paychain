@@ -5,6 +5,11 @@ import { getBalance } from '../lib/web3';
  */
 module.exports = (sequelize, DataTypes) => {
     const Account = sequelize.define('Account', {
+        id: {
+            primaryKey: true,
+            type: DataTypes.UUID,
+            defaultValue: DataTypes.UUIDV4
+        },
         balance: {
             type: DataTypes.STRING,
             allowNull: false,
@@ -24,6 +29,7 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false,
         },
     }, {
+        tableName: 'accounts',
         validate: {
             noNegativeBalance: function (next) {
                 if (this.balance < 0) {

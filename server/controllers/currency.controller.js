@@ -39,6 +39,8 @@ function create(req, res, next) {
         symbol: req.body.symbol,
         address: req.body.address,
     });
+
+    console.log(currency.toJSON())
     currency.save()
         .then(savedCurrency => res.status(201).json(savedCurrency))
         .catch(e => next(e));

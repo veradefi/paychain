@@ -5,6 +5,12 @@
  */
 module.exports = (sequelize, DataTypes) => {
     const Currency = sequelize.define('Currency', {
+        id: {
+            primaryKey: true,
+            type: DataTypes.UUID,
+            allowNull: false,
+            defaultValue: DataTypes.UUIDV4
+        },
         Type: {
             /* eslint-disable */
             type: DataTypes.ENUM('ERC20'),
@@ -32,6 +38,8 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.STRING,
             allowNull: false,
         },
+    }, {
+        tableName: 'currencies'
     });
 
     return Currency;
