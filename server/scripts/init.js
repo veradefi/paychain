@@ -6,6 +6,7 @@ import defaults from '../json/defaults.json';
 import { isLocalNode } from '../helpers/helpers';
 import Token from '../../../build/contracts/TestERC20.json';
 import { getAllAccounts, web3 } from '../lib/web3';
+import BN from 'bn.js';
 
 const tokenContract = {};
 const apiAccounts = [];
@@ -84,6 +85,28 @@ const createDefaultCurrency = (address) => {
     });
 };
 
+const transferTokens = (tokenContract) => {
+    return new Promise((resolve, reject) => {
+        const promises = [];
+        const tokenOwner = defaults.accounts[config.web3.provider_type][0];
+        const accounts = defaults.accounts[config.web3.provider_type];
+
+        for (let i = 1; i < accounts.length; i++) {
+            const p = tokenContract.instance.methods.transfer(accounts[i].address, tokenContract.balance.div(new BN(10))).send({
+                from: tokenOwner.address,
+                gas: 150000,
+                gasPrice: '3000000000'
+            });
+            promises.push(p);
+        }
+
+        Promise.all(promises).then(() => {
+            resolve();
+        })
+        .catch(reject);
+    });
+};
+
 // Create and deploy token
 // Should only be called if we are deploying on testrpc. Otherwise, token should be already deployed
 // and used each time.
@@ -93,7 +116,6 @@ const deployToken = () => {
     return new Promise(async (resolve, reject) => {
         const tokenOwner = defaults.accounts[config.web3.provider_type][0];
 
-        let tokenContract = {};
         const ContractAbi = new web3.eth.Contract(Token.abi);
         ContractAbi
             .deploy({ data: Token.bytecode })
@@ -102,8 +124,19 @@ const deployToken = () => {
                 gas: 1500000,
                 gasPrice: '3000000000',
             })
-            .then((tokenContract) => {
-                return createDefaultCurrency(tokenContract._address);
+            .then((contractInstance) => {
+                tokenContract.instance = contractInstance;
+                return contractInstance
+                          .methods
+                          .balanceOf(tokenOwner.address)
+                          .call({ from: tokenOwner.address });
+            })
+            .then((balance) => {
+                tokenContract.balance = new BN(balance);
+                return transferTokens(tokenContract);
+            })
+            .then(() => {
+                return createDefaultCurrency(tokenContract.instance._address);
             })
             .then((defaultCurrency) => {
                 resolve(tokenContract);
