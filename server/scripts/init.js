@@ -32,10 +32,10 @@ const createAccounts = () => {
     console.log('Creating accounts...');
     return new Promise((resolve, reject) => {
         const promises = [];
-        for (let i = 0; i < defaults.accounts.length; i += 1) {
+        for (let i = 0; i < defaults.accounts[config.web3.provider_type].length; i += 1) {
             const account = {
-                address: defaults.accounts[i].address,
-                privateKey: defaults.accounts[i].privateKey,
+                address: defaults.accounts[config.web3.provider_type][i].address,
+                privateKey: defaults.accounts[config.web3.provider_type][i].privateKey,
             };
 
             const promise = new Promise((resolve, reject) => {
@@ -91,7 +91,7 @@ const createDefaultCurrency = (address) => {
 const deployToken = () => {
     console.log('Deploying token...');
     return new Promise(async (resolve, reject) => {
-        const tokenOwner = defaults.accounts[0];
+        const tokenOwner = defaults.accounts[config.web3.provider_type][0];
 
         let tokenContract = {};
         const ContractAbi = new web3.eth.Contract(Token.abi);

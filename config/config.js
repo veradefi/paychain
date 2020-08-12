@@ -27,6 +27,9 @@ const envVarsSchema = Joi.object({
         .description('MYSQL password'),
     PROVIDER_URL: Joi.string()
         .default('http://localhost:8545'),
+    PROVIDER_TYPE: Joi.string()
+        .allow(['testrpc', 'rinkeby', 'mainnet'])
+        .default('testrpc'),
     ENTROPY: Joi.string()
         .default('54674321§3456764321§345674321§3453647544±±±§±±±!!!43534534534534'),
     TX_PER_SEC: Joi.number()
@@ -74,6 +77,7 @@ const config = {
     },
     web3: {
         provider_url: envVars.PROVIDER_URL,
+        provider_type: envVars.PROVIDER_TYPE,
         entropy: envVars.ENTROPY,
         contract_address: envVars.CONTRACT_ADDRESS,
         default_address: envVars.DEFAULT_ADDRESS,
