@@ -160,7 +160,7 @@ const processQueue = () => {
 
 const startQueue = () => {
     setInterval(() => {
-        // processQueue();
+        processQueue();
     }, 10000);
 };
 
