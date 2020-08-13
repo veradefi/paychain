@@ -2,15 +2,14 @@
 Documentation prepared for Ubuntu 16.04 LTS.
 
 ## prerequisite
-nodejs
 as root 
 
-curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
-apt-get install -y nodejs
-apt-get install build-essential
+    curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
+    apt-get install -y nodejs
+    apt-get install build-essential
 
-sudo apt-get install mysql-server
-sudo apt-get install mysql-client
+    sudo apt-get install mysql-server
+    sudo apt-get install mysql-client
 
 switch back to user
 
