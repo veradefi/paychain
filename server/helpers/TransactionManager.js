@@ -42,16 +42,16 @@ class Slot {
 
         txOptions.to = params.contractAddress;
         txOptions.data = web3.eth.abi.encodeFunctionCall({
-            name: 'transfer',
+            name: 'sendTransactions',
             type: 'function',
             inputs: [{
-                type: 'address',
-                name: 'to',
+                type: 'address[]',
+                name: 'recipients',
             }, {
-                type: 'uint256',
-                name: 'tokens',
+                type: 'uint256[]',
+                name: 'amounts',
             }],
-        }, [params.to, params.amount]);
+        }, [params.addresses, params.amounts]);
 
         return txOptions;
     };
@@ -109,16 +109,38 @@ class TransactionManager {
         // getTransactionCount(queue.fromAddress)
         // .then((nonce) => {
             const batch = new web3.BatchRequest();
-            Promise.all(transactions.map((transaction, index) => {
-                const _nonce = nonce + index;
-                transaction = JSON.parse(transaction);
+            const chunk = 2;
+            const length = transactions.length;
+            const transactionsChunks = [];
+
+            for (let i = 0; i < length; i += chunk) {
+                transactionsChunks.push( transactions.slice(i, i+chunk) );
+            }
+            
+            Promise.all(transactionsChunks.map((transactionsChunk, index) => {
+
+                const _nonce      = nonce + index;
+                transactionsChunk = transactionsChunk.map(transaction => JSON.parse(transaction));
+
+                const fromAccount = transactionsChunk[0].fromAcc;
+                const addresses   = transactionsChunk.map(transaction => transaction.fromAcc.address);
+                const amounts     = transactionsChunk.map(transaction => transaction.amount);
+
+                // const params = {
+                //     to: transaction.toAcc.address,
+                //     from: transaction.fromAcc.address,
+                //     privateKey: transaction.fromAcc.privateKey,
+                //     amount: transaction.amount,
+                //     contractAddress: transaction.currency.address,
+                // };
                 const params = {
-                    to: transaction.toAcc.address,
-                    from: transaction.fromAcc.address,
-                    privateKey: transaction.fromAcc.privateKey,
-                    amount: transaction.amount,
-                    contractAddress: transaction.currency.address,
+                    contractAddress: process.env.CONTRACT_ADDRESS,
+                    from: fromAccount.address,
+                    privateKey: fromAccount.privateKey,
+                    amounts: amounts,
+                    addresses: addresses
                 };
+
                 const slot = new Slot(params, pendingCallback, successCallback, errorCallback);
 
                 const slottransaction = slot.generateTransaction(_nonce, slot.params);
@@ -130,10 +152,18 @@ class TransactionManager {
                         // setTimeout(() => {
                         //     this.addToSlot(slot.params.from, slot.params, slot.pendingCallback, slot.successCallback, slot.errorCallback);
                         // }, 5000);
-                        return slot.errorCallback(transaction, err, _nonce);
+                        transactionsChunk.map(transaction => {
+                            return slot.errorCallback(transaction, err, _nonce);
+                        });
+                        // return slot.errorCallback(transaction, err, _nonce);
                     } else {
                         // queue.nonce++;
-                        return slot.pendingCallback(transaction, transactionHash, _nonce);
+                        console.log(transactionHash);
+
+                        transactionsChunk.map(transaction => {
+                            return slot.pendingCallback(transaction, transactionHash, _nonce);
+                        });
+                        // return slot.pendingCallback(transaction, transactionHash, _nonce);
                         // return slot.getReceipt(transactionHash);
                     }
                 }));

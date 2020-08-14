@@ -124,17 +124,17 @@ const processQueue = () => {
 
         console.log("nonce: ", nonceInt, ", web3Nonce: " , web3Nonce);
 
-        const transactions = await client.lrangeAsync(config.queue.name, 0, 99);
-        const multi        = client.multi();
-        const setCommand   = multi.set(config.queue.name + ":" + default_address, parseInt(nonceInt + transactions.length));
-        const trimCommand  = multi.ltrim(config.queue.name, 99, 10000000000, redis.print);
-        const results      = await multi.execAsync();
+        const transactions   = await client.lrangeAsync(config.queue.name, 0, 999);
+        const nonceIncrement = Math.ceil(transactions.length / 2) + nonceInt;
+        const multi          = client.multi();
+        const setCommand     = multi.set(config.queue.name + ":" + default_address, nonceIncrement);
+        const trimCommand    = multi.ltrim(config.queue.name, 999, 10000000000, redis.print);
+        const results        = await multi.execAsync();
 
         if (results !== null && transactions.length > 0) {
 
             transactionManager.sendBatchTransactions(nonceInt, transactions, 
                 (transaction, transactionHash, nonce) => {
-                    console.log(transactionHash);
                     setStatus(transaction, 'pending', {
                         statusDescription: '',
                         transactionHash: transactionHash,
