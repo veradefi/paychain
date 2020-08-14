@@ -29,7 +29,7 @@ const setModel = (TransactionModel) => {
 
 const add = (queueType, transaction, delay = 0) => {
 
-    client.rpush('transactions', JSON.stringify(transaction), (err, res) => console.log(err, res));
+    client.rpush(config.queue.name, JSON.stringify(transaction), (err, res) => console.log(err, res));
 
     // const job = queue
     //                 .create(queueType, transaction)
@@ -114,8 +114,15 @@ const processQueue = () => {
     client.watch(config.queue.name + ":" + default_address, async ( err ) => {
 
         const nonce = await client.getAsync(config.queue.name + ":" + default_address);
-        const nonceInt = parseInt(nonce);
-        console.log("nonce", nonce)
+        const web3Nonce = await getTransactionCount(default_address);
+        let nonceInt = parseInt(nonce);
+
+        if (web3Nonce > nonceInt) {
+            nonceInt = parseInt(web3Nonce);
+            await client.set(config.queue.name + ":" + default_address, nonceInt);
+        };
+
+        console.log("nonce: ", nonceInt, ", web3Nonce: " , web3Nonce);
 
         const transactions = await client.lrangeAsync(config.queue.name, 0, 99);
         const multi        = client.multi();
@@ -144,7 +151,6 @@ const processQueue = () => {
                         // done(null, receipt);
                     });
                 }, (transaction, error, nonce) => {
-                    console.log(error.toString());
                     setStatus(transaction, 'failed', {
                         statusDescription: error.toString()
                     }).then(() => {
