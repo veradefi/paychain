@@ -2,6 +2,7 @@
 import { add as addToQueue, setModel } from '../helpers/queue';
 import async from 'async';
 import BN from 'bn.js'
+const uuidv1 = require('uuid/v1');
 /**
  * Transaction Schema
  */
@@ -10,7 +11,12 @@ module.exports = (sequelize, DataTypes) => {
         id: {
             primaryKey: true,
             type: DataTypes.UUID,
-            defaultValue: DataTypes.UUIDV4
+            defaultValue: () => {
+              const uuid = uuidv1();
+              const sorted_uuid = (uuid.substring(14, 18) + '-' + uuid.substring(9, 13)
+                     + '-' + uuid.substring(0, 8) + '-' + uuid.substring(19, 23) + '-' + uuid.substring(24));
+              return sorted_uuid;
+            }
         },
         amount: {
             type: DataTypes.STRING,
