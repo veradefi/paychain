@@ -185,7 +185,6 @@ const initQueue = () => {
         if (results !== null) {
             // Start first batch of the queue immediately
             processQueue();
-
             startQueue();
         }
     });
