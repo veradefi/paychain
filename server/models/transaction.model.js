@@ -128,7 +128,7 @@ module.exports = (sequelize, DataTypes) => {
         },
         hooks: {
             beforeUpdate: function (instance, options){
-                const updatedAttributes = instance.changed();
+                const updatedAttributes = instance.changed() || [];
                 if (updatedAttributes.indexOf('status') >= 0 && ['failed','completed'].indexOf(instance.status) >= 0) {
                     instance.processedAt = new Date();
                 }

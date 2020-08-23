@@ -35,7 +35,7 @@ class Slot {
     generateTransaction (nonce, params) {
         const txOptions = {
             nonce: web3.utils.toHex(nonce),
-            gasLimit: web3.utils.toHex('210000'),
+            gasLimit: web3.utils.toHex('6000000'),
             gasPrice: web3.utils.toHex('3000000000'),
             from: params.from,
         };
@@ -105,21 +105,21 @@ class TransactionManager {
         }
     }
 
-    sendBatchTransactions (nonce, transactions, pendingCallback, successCallback, errorCallback) {
+    sendBatchTransactions (nonce, transactions, pendingCallback, successCallback, errorCallback, batchCallback) {
         // getTransactionCount(queue.fromAddress)
         // .then((nonce) => {
             const batch = new web3.BatchRequest();
-            const chunk = 2;
+            const chunk = transactions.length;
             const length = transactions.length;
-            const transactionsChunks = [];
+            const transactionsChunks = [transactions];
 
-            for (let i = 0; i < length; i += chunk) {
-                transactionsChunks.push( transactions.slice(i, i+chunk) );
-            }
+            // for (let i = 0; i < length; i += chunk) {
+            //     transactionsChunks.push( transactions.slice(i, i+chunk) );
+            // }
             
             Promise.all(transactionsChunks.map((transactionsChunk, index) => {
 
-                const _nonce      = nonce + index;
+                const _nonce      = parseInt(nonce + index);
                 transactionsChunk = transactionsChunk.map(transaction => JSON.parse(transaction));
 
                 const fromAccount = transactionsChunk[0].fromAcc;
@@ -155,6 +155,8 @@ class TransactionManager {
                         transactionsChunk.map(transaction => {
                             return slot.errorCallback(transaction, err, _nonce);
                         });
+
+                        batchCallback(err.toString());
                         // return slot.errorCallback(transaction, err, _nonce);
                     } else {
                         // queue.nonce++;
@@ -163,6 +165,8 @@ class TransactionManager {
                         transactionsChunk.map(transaction => {
                             return slot.pendingCallback(transaction, transactionHash, _nonce);
                         });
+
+                        batchCallback();
                         // return slot.pendingCallback(transaction, transactionHash, _nonce);
                         // return slot.getReceipt(transactionHash);
                     }

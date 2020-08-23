@@ -20,7 +20,7 @@ const getAllAccounts = () => {
 };
 
 const getTransactionCount = (address) => {
-    return web3.eth.getTransactionCount(address);
+    return web3.eth.getTransactionCount(address, 'pending');
 };
 
 const getReceipt = (transactionHash) => {

@@ -29,7 +29,7 @@ const setModel = (TransactionModel) => {
 
 const add = (queueType, transaction, delay = 0) => {
 
-    client.rpush(config.queue.name, JSON.stringify(transaction), (err, res) => console.log(err, res));
+    client.rpush(config.queue.name, JSON.stringify(transaction), (err, res) => {});
 
     // const job = queue
     //                 .create(queueType, transaction)
@@ -113,10 +113,12 @@ const processQueue = () => {
 
     client.watch(config.queue.name + ":" + default_address, async ( err ) => {
 
+        if (err) throw err;
         const nonce = await client.getAsync(config.queue.name + ":" + default_address);
         const web3Nonce = await getTransactionCount(default_address);
         let nonceInt = parseInt(nonce);
 
+        // If a transaction is made outside of the app or nonce lags behind actual transaction count
         if (web3Nonce > nonceInt) {
             nonceInt = parseInt(web3Nonce);
             await client.set(config.queue.name + ":" + default_address, nonceInt);
@@ -124,14 +126,13 @@ const processQueue = () => {
 
         console.log("nonce: ", nonceInt, ", web3Nonce: " , web3Nonce);
 
-        const transactions   = await client.lrangeAsync(config.queue.name, 0, 999);
-        const nonceIncrement = Math.ceil(transactions.length / 2) + nonceInt;
-        const multi          = client.multi();
-        const setCommand     = multi.set(config.queue.name + ":" + default_address, nonceIncrement);
-        const trimCommand    = multi.ltrim(config.queue.name, 999, 10000000000, redis.print);
-        const results        = await multi.execAsync();
+        const transactions   = await client.lrangeAsync(config.queue.name, 0, 199);
+        const removeCommand  = await client.ltrimAsync(config.queue.name, 199, 100000);
+        const nonceIncrement = 1 + nonceInt;
+        const multi          = client.multi()
+                                     .set(config.queue.name + ":" + default_address, nonceIncrement);
 
-        if (results !== null && transactions.length > 0) {
+        if (transactions.length > 0) {
 
             transactionManager.sendBatchTransactions(nonceInt, transactions, 
                 (transaction, transactionHash, nonce) => {
@@ -144,7 +145,6 @@ const processQueue = () => {
                         // done(null, transactionHash);
                     });
                 }, (transaction, receipt) => {
-                    // console.log("receipt", JSON.stringify(receipt));
                     setStatus(transaction, 'completed', {
                         statusDescription: JSON.stringify(receipt),
                     }).then(() => {
@@ -154,11 +154,12 @@ const processQueue = () => {
                     setStatus(transaction, 'failed', {
                         statusDescription: error.toString()
                     }).then(() => {
-                        // done(error);
-                        if (shouldRetry(error)) {
-                            add(config.queue.name, transaction);
-                        }
+                        add(config.queue.name, transaction);
                     });
+                }, (err) => {
+                    if (!err) {
+                        multi.execAsync().then(console.log);
+                    }
                 });
         }
     });
@@ -167,7 +168,7 @@ const processQueue = () => {
 const startQueue = () => {
     setInterval(() => {
         processQueue();
-    }, 10000);
+    }, 2000);
 };
 
 const stopQueue = () => {
@@ -176,6 +177,7 @@ const stopQueue = () => {
 
 const initQueue = () => {
     const default_address = process.env.DEFAULT_ADDRESS;
+
     client.watch(config.queue.name + ":" + default_address, async ( err )=> {
         if(err) throw err;
 

@@ -97,16 +97,16 @@ const pendingTask = cron.schedule('* * * * *', () => {
 });
 
 completedTask.start();
-// completedTask.stop();
+completedTask.stop();
 
 pendingTask.start();
-// pendingTask.stop();
+pendingTask.stop();
 
 // startProcessing();
 
 setTimeout(() => {
-    processStuckTransactions();
-    processPendingTransactions();
+    // processStuckTransactions();
+    // processPendingTransactions();
 }, 1000);
 
 export default cron;
