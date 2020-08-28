@@ -158,9 +158,18 @@ const processQueue = () => {
                     });
                 }, (err) => {
                     if (!err) {
-                        multi.execAsync().then(console.log);
+                        multi
+                            .execAsync()
+                            .then(() => processQueue())
+                            .catch((err) => processQueue());
+                    } else {
+                        processQueue();
                     }
                 });
+        } else {
+          setTimeout(() => {
+              processQueue();
+          }, 1000)
         }
     });
 };
@@ -187,7 +196,7 @@ const initQueue = () => {
         if (results !== null) {
             // Start first batch of the queue immediately
             processQueue();
-            startQueue();
+            // startQueue();
         }
     });
 
