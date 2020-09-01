@@ -56,7 +56,7 @@ function sendTransactionRequests(size = 100) {
 
     transactions.map((transaction) => {
         it('should create a transaction', (done) => {
-            transaction.from = getRandomAccountId();
+            transaction.from = "11e8-aa60-5e85f5e0-a619-0dac18e6bd5b"//getRandomAccountId();
             transaction.to = getRandomAccountId();
             request(config.api_url)
                 .post('/api/transactions')
@@ -100,7 +100,7 @@ describe('## Transaction APIs', () => {
             getApiAccounts().then(() => done()).catch(done);
         });
 
-        sendTransactionRequests(config.test.tx_per_sec);
+        sendTransactionRequests(60000);
 
         it('should wait for transaction confirmation', (done) => {
             const promises = [];

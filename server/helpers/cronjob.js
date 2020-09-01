@@ -8,19 +8,30 @@ setModel(Transaction);
 
 const updateStatus = (transaction, status, statusDescription) => {
     return new Promise((resolve, reject) => {
-        Transaction.findOne({ where: { id: transaction.id } })
+        Transaction
+            .update({
+                status,
+                statusDescription,
+            }, { 
+              where: { 
+                transactionHash: transaction.transactionHash 
+              },
+              hooks: false,
+              validate: false,
+            })
             .then((newTransaction) => {
-                if (newTransaction) {
-                    return newTransaction.updateAttributes({
-                        status,
-                        statusDescription,
-                    })
-                    .then(() => {
-                        resolve(newTransaction);
-                    })
-                    .catch(reject);
-                }
-                return reject();
+                resolve();
+                // if (newTransaction) {
+                //     return newTransaction.updateAttributes({
+                //         status,
+                //         statusDescription,
+                //     })
+                //     .then(() => {
+                //         resolve(newTransaction);
+                //     })
+                //     .catch(reject);
+                // }
+                // return reject();
             })
             .catch(reject);
     });
@@ -62,10 +73,11 @@ const fetchPendingTransactions = () => {
         where: {
             status: 'pending',
             processedAt: {
-                $gt: db.sequelize.fn('DATE_SUB', db.sequelize.fn('NOW'), db.sequelize.literal('INTERVAL 5 MINUTE'))
+                $gt: db.sequelize.fn('DATE_SUB', db.sequelize.fn('NOW'), db.sequelize.literal('INTERVAL 10 DAY'))
             }
         },
-        attributes: ['status', 'id', 'transactionHash', 'processedAt'],
+        group: ['transactionHash'],
+        attributes: ['transactionHash'],
     });
 }
 
@@ -83,6 +95,7 @@ const processPendingTransactions = () => {
     fetchPendingTransactions()
       .then((transactions) => {
           generateBulkQuery(transactions);
+          // console.log(transactions.length)
       })
       .catch(console.log);
 };
@@ -100,13 +113,13 @@ completedTask.start();
 completedTask.stop();
 
 pendingTask.start();
-pendingTask.stop();
+// pendingTask.stop();
 
 // startProcessing();
 
 setTimeout(() => {
     // processStuckTransactions();
-    // processPendingTransactions();
+    processPendingTransactions();
 }, 1000);
 
 export default cron;
