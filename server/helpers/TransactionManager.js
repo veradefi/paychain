@@ -1,5 +1,6 @@
 import { getTransactionCount, signTransaction, web3 } from '../lib/web3';
 import { decrypt } from '../helpers/crypto';
+import config from '../../config/config'
 
 class Slot {
     params = {}; // eslint-disable-line
@@ -122,7 +123,6 @@ class TransactionManager {
                 const _nonce      = parseInt(nonce + index);
                 transactionsChunk = transactionsChunk.map(transaction => JSON.parse(transaction));
 
-                const fromAccount = transactionsChunk[0].fromAcc;
                 const addresses   = transactionsChunk.map(transaction => transaction.fromAcc.address);
                 const amounts     = transactionsChunk.map(transaction => transaction.amount);
 
@@ -134,9 +134,9 @@ class TransactionManager {
                 //     contractAddress: transaction.currency.address,
                 // };
                 const params = {
-                    contractAddress: process.env.CONTRACT_ADDRESS,
-                    from: fromAccount.address,
-                    privateKey: fromAccount.privateKey,
+                    contractAddress: config.web3.contract_address,
+                    from: config.web3.default_address,
+                    privateKey: config.web3.private_key,
                     amounts: amounts,
                     addresses: addresses
                 };

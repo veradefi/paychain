@@ -46,6 +46,8 @@ const envVarsSchema = Joi.object({
         .default(1337),
     DEFAULT_ADDRESS: Joi.string().allow('')
         .default(''),
+    PRIVATE_KEY: Joi.string().allow('')
+        .default(''),
     CONTRACT_ADDRESS: Joi.string().allow('')
         .default(''),
 }).unknown()
@@ -81,6 +83,7 @@ const config = {
         entropy: envVars.ENTROPY,
         contract_address: envVars.CONTRACT_ADDRESS,
         default_address: envVars.DEFAULT_ADDRESS,
+        private_key: envVars.PRIVATE_KEY,
     },
     test: {
         tx_per_sex: envVars.TX_PER_SEC,
