@@ -1,5 +1,7 @@
 import cron from 'node-cron';
 import db from '../config/sequelize';
+import config from '../config/config'
+
 import { getReceipt } from '../server/lib/web3';
 import { add as addToQueue, setModel } from '../queue/queue';
 
@@ -21,17 +23,6 @@ const updateStatus = (transaction, status, statusDescription) => {
             })
             .then((newTransaction) => {
                 resolve();
-                // if (newTransaction) {
-                //     return newTransaction.updateAttributes({
-                //         status,
-                //         statusDescription,
-                //     })
-                //     .then(() => {
-                //         resolve(newTransaction);
-                //     })
-                //     .catch(reject);
-                // }
-                // return reject();
             })
             .catch(reject);
     });
@@ -49,6 +40,24 @@ const generateBulkQuery = (transactions) => {
             })
             .catch(console.error);
     }
+};
+
+// Re-queue transactions that are not processed by the queue handler for a long time
+const fetchQueueTransactions = () => {
+    // const interval = 300 + 5; // 300 minutes
+    return Transaction.findAll({
+        where: {
+            status: 'initiated',
+            updatedAt: {
+                $lt: db.sequelize.fn('DATE_SUB', db.sequelize.fn('NOW'), db.sequelize.literal('INTERVAL 5 MINUTE'))
+            }
+        },
+        include: [
+            { model: db.sequelize.models.Account, as: 'fromAcc'},
+            { model: db.sequelize.models.Account, as: 'toAcc'},
+            { model: db.sequelize.models.Currency, as: 'currency'},
+        ],
+    });
 };
 
 const fetchStuckTransactions = () => {
@@ -85,7 +94,18 @@ const processStuckTransactions = () => {
     fetchStuckTransactions()
       .then((transactions) => {
           for (let i = 0; i < transactions.length; i++) {
-              addToQueue('transactions', transactions[i]);
+              addToQueue(config.queue.name, transactions[i]);
+          }
+      })
+      .catch(console.log);
+};
+
+const processQueueTransactions = () => {
+    fetchQueueTransactions()
+      .then((transactions) => {
+          console.log("stuck in queue: ", transactions.length)
+          for (let i = 0; i < transactions.length; i++) {
+              addToQueue(config.queue.name, transactions[i]);
           }
       })
       .catch(console.log);
@@ -95,7 +115,7 @@ const processPendingTransactions = () => {
     fetchPendingTransactions()
       .then((transactions) => {
           generateBulkQuery(transactions);
-          console.log(transactions.length)
+          console.log("pending confirmation: ", transactions.length)
           // console.log(transactions.length)
       })
       .catch(console.log);
@@ -110,16 +130,23 @@ const pendingTask = cron.schedule('* * * * *', () => {
     processPendingTransactions();
 });
 
+const queueTask = cron.schedule('* * * * *', () => {
+    processQueueTransactions();
+});
+
 completedTask.start();
 completedTask.stop();
 
 pendingTask.start();
 // pendingTask.stop();
 
+queueTask.start();
 // startProcessing();
 
 setTimeout(() => {
     // processStuckTransactions();
+    
+    processQueueTransactions();
     processPendingTransactions();
 }, 1000);
 

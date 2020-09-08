@@ -30,15 +30,6 @@ const setModel = (TransactionModel) => {
 const add = (queueType, transaction, delay = 0) => {
 
     client.rpush(config.queue.name, JSON.stringify(transaction), (err, res) => {});
-
-    // const job = queue
-    //                 .create(queueType, transaction)
-    //                 .priority('high')
-    //                 .delay(delay)
-    //                 .save();
-    // job.on('start', () => {
-    //     console.log('Queue job started', job.id);
-    // });
 };
 
 const setStatus = (transaction, status, params) => {
@@ -57,53 +48,6 @@ const setStatus = (transaction, status, params) => {
                 return reject();
             })
             .catch(reject);
-    });
-};
-
-const sendTransaction = (transaction, done) => {
-    const params = {
-        to: transaction.toAcc.address,
-        from: transaction.fromAcc.address,
-        privateKey: transaction.fromAcc.privateKey,
-        amount: transaction.amount,
-        contractAddress: transaction.currency.address, // Need this address to be of token
-    };
-
-    return setStatus(transaction, 'committed', {
-        statusDescription: '',
-        transactionHash: '',
-        store_id: '',
-        processedAt: null
-    }).then(() => {
-        transactionManager.addTransaction(params, (transactionHash, nonce) => {
-            // console.log("transactionHash", JSON.stringify(transactionHash));
-            setStatus(transaction, 'pending', {
-                statusDescription: '',
-                transactionHash: transactionHash,
-                store_id: nonce,
-                processedAt: new Date(),
-            }).then(() => {
-                // done(null, transactionHash);
-            });
-        }, (receipt) => {
-            // console.log("receipt", JSON.stringify(receipt));
-            setStatus(transaction, 'completed', {
-                statusDescription: JSON.stringify(receipt),
-            }).then(() => {
-                // done(null, receipt);
-            });
-        }, (error, nonce) => {
-            setStatus(transaction, 'failed', {
-                statusDescription: error.toString()
-            }).then(() => {
-                // done(error);
-                if (shouldRetry(error)) {
-                  add(config.queue.name, transaction, 10000);
-                }
-            });
-        });
-        done(null, transaction);
-        return null;
     });
 };
 
@@ -174,15 +118,15 @@ const processQueue = () => {
     });
 };
 
-const startQueue = () => {
-    setInterval(() => {
-        processQueue();
-    }, 2000);
-};
+// const startQueue = () => {
+//     setInterval(() => {
+//         processQueue();
+//     }, 2000);
+// };
 
-const stopQueue = () => {
-    // clearInterval();
-};
+// const stopQueue = () => {
+//     // clearInterval();
+// };
 
 const initQueue = () => {
     const default_address = process.env.DEFAULT_ADDRESS;
@@ -196,7 +140,6 @@ const initQueue = () => {
         if (results !== null) {
             // Start first batch of the queue immediately
             processQueue();
-            // startQueue();
         }
     });
 
