@@ -1,10 +1,10 @@
 import kue from 'kue';
 import redis from 'redis';
 import bluebird from 'bluebird';
-import config from '../../config/config'
+import config from '../config/config'
 import TransactionManager from './TransactionManager';
-import { shouldRetry } from './helpers';
-import { getTransactionCount, signTransaction, web3 } from '../lib/web3';
+import { shouldRetry } from '../server/helpers/helpers';
+import { getTransactionCount, signTransaction, web3 } from '../server/lib/web3';
 import "babel-polyfill";
 
 

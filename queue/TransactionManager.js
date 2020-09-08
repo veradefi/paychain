@@ -1,6 +1,6 @@
-import { getTransactionCount, signTransaction, web3 } from '../lib/web3';
-import { decrypt } from '../helpers/crypto';
-import config from '../../config/config'
+import { getTransactionCount, signTransaction, web3 } from '../server/lib/web3';
+import { decrypt } from '../server/helpers/crypto';
+import config from '../config/config'
 
 class Slot {
     params = {}; // eslint-disable-line

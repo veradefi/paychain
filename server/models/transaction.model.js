@@ -1,5 +1,5 @@
 
-import { add as addToQueue, setModel } from '../helpers/queue';
+import { add as addToQueue, setModel } from '../../queue/queue';
 import async from 'async';
 import BN from 'bn.js'
 const uuidv1 = require('uuid/v1');

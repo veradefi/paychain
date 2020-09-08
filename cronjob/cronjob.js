@@ -1,7 +1,7 @@
 import cron from 'node-cron';
-import db from '../../config/sequelize';
-import { getReceipt } from '../lib/web3';
-import { add as addToQueue, setModel } from './queue';
+import db from '../config/sequelize';
+import { getReceipt } from '../server/lib/web3';
+import { add as addToQueue, setModel } from '../queue/queue';
 
 const Transaction = db.Transaction;
 setModel(Transaction);
@@ -95,6 +95,7 @@ const processPendingTransactions = () => {
     fetchPendingTransactions()
       .then((transactions) => {
           generateBulkQuery(transactions);
+          console.log(transactions.length)
           // console.log(transactions.length)
       })
       .catch(console.log);

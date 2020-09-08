@@ -3,7 +3,7 @@
 import request from 'supertest-as-promised';
 import httpStatus from 'http-status';
 import chai, { expect } from 'chai';
-import config from '../../../config/config';
+import config from '../../config/config';
 
 chai.config.includeStack = true;
 
@@ -56,7 +56,7 @@ function sendTransactionRequests(size = 100) {
 
     transactions.map((transaction) => {
         it('should create a transaction', (done) => {
-            transaction.from = "11e8-aa60-5e85f5e0-a619-0dac18e6bd5b"//getRandomAccountId();
+            transaction.from = getRandomAccountId();
             transaction.to = getRandomAccountId();
             request(config.api_url)
                 .post('/api/transactions')
@@ -100,7 +100,7 @@ describe('## Transaction APIs', () => {
             getApiAccounts().then(() => done()).catch(done);
         });
 
-        sendTransactionRequests(60000);
+        sendTransactionRequests(100);
 
         it('should wait for transaction confirmation', (done) => {
             const promises = [];

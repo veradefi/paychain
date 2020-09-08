@@ -15,7 +15,7 @@ import routes from '../server/routes/index.route';
 import testRoutes from '../server/routes/test.route';
 import config from './config';
 import APIError from '../server/helpers/APIError';
-import { initQueue } from '../server/helpers/queue';
+import { initQueue } from '../queue/queue';
 
 const app = express();
 
