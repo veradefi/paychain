@@ -1,11 +1,11 @@
 import request from 'supertest-as-promised';
-import db from '../../config/sequelize';
-import app from '../../index';
-import config from '../../config/config';
-import defaults from '../json/defaults.json';
-import { isLocalNode } from '../helpers/helpers';
-import Token from '../../../build/contracts/TestERC20.json';
-import { getAllAccounts, web3 } from '../lib/web3';
+import db from '../config/sequelize';
+import app from '../index';
+import config from '../config/config';
+import defaults from '../server/json/defaults.json';
+import { isLocalNode } from '../server/helpers/helpers';
+import Token from '../../build/contracts/TestERC20.json';
+import { getAllAccounts, web3 } from '../server/lib/web3';
 import BN from 'bn.js';
 
 const tokenContract = {};
@@ -171,7 +171,9 @@ const initProd = async () => {
 };
 
 if (isLocalNode(config.web3.provider_url)) {
-    initLocal();
+    console.log("Running in local environment")
+    // initLocal();
 } else {
-    initProd();
+    console.log("Running in production environment")
+    // initProd();
 };

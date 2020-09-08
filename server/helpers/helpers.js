@@ -13,7 +13,7 @@ const shouldRetry = (error) =>{
 };
 
 const isLocalNode = (providerUrl) => {
-    return providerUrl && providerUrl.indexOf('127.0.0.1') >= 0 && config.env !== 'production';
+    return config.env !== 'production';
 };
 
 export default { shouldRetry, isLocalNode }

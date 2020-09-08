@@ -14,7 +14,7 @@
     "start": "gulp serve",
     "queue": "yarn build && nodemon ./dist/queue/index.js",
     "cron": "yarn build && nodemon ./dist/cronjob/index.js",
-    "initialize": "yarn build && node ./dist/server/scripts/init.js",
+    "initialize": "yarn build && node ./dist/scripts/init.js",
     "start:debug": "cross-env DEBUG=amida-api-boilerplate:* yarn start",
     "build": "gulp",
     "lint": "esw *.js server config --color",
