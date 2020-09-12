@@ -15,6 +15,7 @@
     "queue": "yarn build && nodemon ./dist/queue/index.js",
     "cron": "yarn build && nodemon ./dist/cronjob/index.js",
     "initialize": "yarn build && node ./dist/scripts/init.js",
+    "crypto": "yarn build && node ./dist/scripts/encrypt.js",
     "start:debug": "cross-env DEBUG=amida-api-boilerplate:* yarn start",
     "build": "gulp",
     "lint": "esw *.js server config --color",
