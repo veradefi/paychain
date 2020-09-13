@@ -100,7 +100,7 @@ describe('## Transaction APIs', () => {
             getApiAccounts().then(() => done()).catch(done);
         });
 
-        sendTransactionRequests(100);
+        sendTransactionRequests(config.test.tx_per_sex);
 
         it('should wait for transaction confirmation', (done) => {
             const promises = [];
