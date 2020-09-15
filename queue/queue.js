@@ -1,34 +1,17 @@
 import kue from 'kue';
-import redis from 'redis';
-import bluebird from 'bluebird';
 import config from '../config/config'
+import client from './client'
 import TransactionManager from './TransactionManager';
 import { shouldRetry } from '../server/helpers/helpers';
+import db from '../config/sequelize'
 import { getTransactionCount, signTransaction, web3 } from '../server/lib/web3';
 import "babel-polyfill";
 
-
-const client = redis.createClient();
-bluebird.promisifyAll(redis);
-
-const queue = kue.createQueue({
-  prefix: 'q',
-  redis: {
-    port: config.queue.port,
-    host: config.queue.host,
-    auth: config.queue.password,
-  },
-});
-
 const transactionManager = new TransactionManager();
 
-let Model;
-const setModel = (TransactionModel) => {
-    Model = TransactionModel;
-};
+let Model = db.Transaction;
 
 const add = (queueType, transaction, delay = 0) => {
-
     client.rpush(config.queue.name, JSON.stringify(transaction), (err, res) => {});
 };
 
@@ -146,7 +129,6 @@ const initQueue = () => {
 };
 
 export default {
-    setModel,
     add,
     processQueue,
     initQueue,

@@ -15,16 +15,11 @@ import routes from '../server/routes/index.route';
 import testRoutes from '../server/routes/test.route';
 import config from './config';
 import APIError from '../server/helpers/APIError';
-import { initQueue } from '../queue/queue';
 
 const app = express();
 
 if (config.env === 'development') {
     app.use(logger('dev'));
-}
-
-if (config.env === 'development' || config.env === 'production') {
-    initQueue();
 }
 
 // parse body params and attache them to req.body

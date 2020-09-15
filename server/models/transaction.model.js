@@ -1,5 +1,6 @@
 
-import { add as addToQueue, setModel } from '../../queue/queue';
+import client from '../../queue/client'
+import config from '../../config/config'
 import async from 'async';
 import BN from 'bn.js'
 const uuidv1 = require('uuid/v1');
@@ -160,7 +161,7 @@ module.exports = (sequelize, DataTypes) => {
                         });
                     })
                     .then((result) => {
-                        addToQueue('transactions', newTransaction);
+                         client.rpush(config.queue.name, JSON.stringify(newTransaction), (err, res) => {});
                     })
                     .catch((err) => {
                         throw err;
@@ -174,6 +175,5 @@ module.exports = (sequelize, DataTypes) => {
     Transaction.belongsTo(sequelize.models.Account, {foreignKey: 'to', targetKey: 'id', as: 'toAcc', onDelete: 'cascade'});
     Transaction.belongsTo(sequelize.models.Currency, {foreignKey: 'currency_id', targetKey: 'id', as: 'currency', onDelete: 'cascade'});
 
-    setModel(Transaction);
     return Transaction;
 };
