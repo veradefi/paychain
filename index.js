@@ -3,6 +3,7 @@ import app from './config/express';
 import io from './config/socket';
 /* eslint-disable no-unused-vars */
 import db from './config/sequelize';
+require("babel-polyfill");
 
 const debug = require('debug')('amida-api-boilerplate:index');
 /* eslint-enable no-unused-vars */

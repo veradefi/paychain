@@ -172,8 +172,8 @@ const initProd = async () => {
 
 if (isLocalNode(config.web3.provider_url)) {
     console.log("Running in local environment")
-    // initLocal();
+    initLocal();
 } else {
     console.log("Running in production environment")
-    // initProd();
+    initProd();
 };
