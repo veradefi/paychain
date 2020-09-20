@@ -45,7 +45,7 @@ class TransactionManager {
                 const _nonce      = parseInt(nonce + index);
                 transactionsChunk = transactionsChunk.map(transaction => JSON.parse(transaction));
 
-                const addresses   = transactionsChunk.map(transaction => transaction.fromAcc.address);
+                const addresses   = transactionsChunk.map(transaction => transaction.toAcc.address);
                 const amounts     = transactionsChunk.map(transaction => transaction.amount);
 
                 const params = {
