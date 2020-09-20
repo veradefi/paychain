@@ -1,5 +1,6 @@
 import { encrypt } from '../helpers/crypto';
 import { getBalance } from '../lib/web3';
+import config from '../../config/config'
 const uuidv1 = require('uuid/v1');
 
 /**
@@ -54,24 +55,15 @@ module.exports = (sequelize, DataTypes) => {
         hooks: {
             beforeCreate: function(account, options) {
                 return new Promise((resolve, reject) => {
-                    sequelize.models.Currency.findOne({
-                        where: {
-                            symbol: 'DC',
-                        },
-                    })
-                    .then((currency) => {
-                        getBalance(currency.address, account.address)
-                            .then((balance) => {
-                                account.balance = balance;
-                                resolve(account)
-                            })
-                            .catch((err) => {
-                                console.log(err)
-                                // reject(err)
-                                resolve(account);
-                            });
-                    })
-                    .catch(reject);
+                    getBalance(config.web3.payment_address, account.address)
+                        .then((balance) => {
+                            account.balance = balance;
+                            resolve(account)
+                        })
+                        .catch((err) => {
+                            console.log(err)
+                            resolve(account);
+                        });
                 });
             }
         }

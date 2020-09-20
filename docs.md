@@ -31,9 +31,9 @@ Configuration:
       Very important. Used to process transactions. Should be owner of ChainPay contract. Only one address is supported at a time.
     - PRIVATE_KEY:
       Encrypted private key of the default address. May be removed later on. Used to sign transactions for default address
-    - CHAINPAY_CONTRACT_ADDRESS:
+    - CONTRACT_ADDRESS:
       Address of ChainPay contract deployed on ethereum node. This is used to make transfers in bulk.
-    - TOKEN_CONTRACT_ADDRESS:
+    - PAYMENT_ADDRESS:
       Address of token contract deployed on ethereum node. Used to update account balance.
 
 Initialization:

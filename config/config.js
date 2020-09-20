@@ -50,6 +50,8 @@ const envVarsSchema = Joi.object({
         .default(''),
     CONTRACT_ADDRESS: Joi.string().allow('')
         .default(''),
+    PAYMENT_ADDRESS: Joi.string().allow('')
+        .default(''),
 }).unknown()
     .required();
 
@@ -82,6 +84,7 @@ const config = {
         provider_type: envVars.PROVIDER_TYPE,
         entropy: envVars.ENTROPY,
         contract_address: envVars.CONTRACT_ADDRESS,
+        payment_address: envVars.PAYMENT_ADDRESS,
         default_address: envVars.DEFAULT_ADDRESS,
         private_key: envVars.PRIVATE_KEY,
     },
