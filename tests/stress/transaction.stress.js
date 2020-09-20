@@ -85,7 +85,7 @@ function waitForTransactionConfirmation(transaction, length) {
                 .then((res) => {
                     expect(res.body.to).to.equal(transaction.to);
                     expect(res.body.from).to.equal(transaction.from);
-                    expect(res.body.status).to.be.oneOf(['pending', 'completed']);
+                    expect(res.body.status).to.be.oneOf(['initiated','pending', 'completed']);
                     fulfill();
                 })
                 .catch(reject);
