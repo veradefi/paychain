@@ -92,7 +92,8 @@ const transferTokens = (tokenContract) => {
         const accounts = defaults.accounts[config.web3.provider_type];
 
         for (let i = 1; i < accounts.length; i++) {
-            const p = tokenContract.instance.methods.transfer(accounts[i].address, tokenContract.balance.div(new BN(10))).send({
+            const b = tokenContract.balance.div(new BN(10))
+            const p = tokenContract.instance.methods.transfer(accounts[i].address, b.toString(10)).send({
                 from: tokenOwner.address,
                 gas: 150000,
                 gasPrice: '3000000000'
