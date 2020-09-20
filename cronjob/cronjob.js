@@ -3,10 +3,9 @@ import db from '../config/sequelize';
 import config from '../config/config'
 
 import { getReceipt } from '../server/lib/web3';
-import { add as addToQueue, setModel } from '../queue/queue';
+import { add as addToQueue } from '../queue/queue';
 
 const Transaction = db.Transaction;
-setModel(Transaction);
 
 const updateStatus = (transaction, status, statusDescription) => {
     return new Promise((resolve, reject) => {
