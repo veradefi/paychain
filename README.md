@@ -1,25 +1,40 @@
+
 # chainpay
 Documentation prepared for Ubuntu 16.04 LTS.
 
 ## prerequisite
 as root 
   
-  ### Install Git
+### Install Git
+```
       apt-get update
       apt-get upgrade
-      apt-get install git
-  ### Install Node (v 10.*)
+      apt-get install build-essential tcl git
+```
+
+### Install Node (v 10.*)
+
+```
     curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
     apt-get install -y nodejs
-    apt-get install build-essential
+```
 
-  ### Install Mysql (Server version 5.7, client Ver 14.14)
+### Install Mysql (Server version 5.7, client Ver 14.14)
+
+```
     apt-get install mysql-client
     apt-get install mysql-server-5.7 
-    mysql_secure_installation (to configure mysql for first time use)
+```
+Configure mysql for first time use
+```
+    mysql_secure_installation 
+```
 
-  ### Install Redis (v 4.0, https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-redis-on-ubuntu-16-04)
-    apt-get install build-essential tcl
+### Install Redis 
+Source 
+https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-redis-on-ubuntu-16-04
+
+```
     cd /tmp
     curl -O http://download.redis.io/redis-stable.tar.gz
     tar xzvf redis-stable.tar.gz
@@ -29,48 +44,79 @@ as root
     make install
     mkdir /etc/redis
     cp /tmp/redis-stable/redis.conf /etc/redis
+
+```
+Configure redis
+```sh
     vi /etc/redis/redis.conf
-        - update supervised from "no" to "systemd"
-        - update dir from "./" to "/var/lib/redis"
+```
+     
+- update supervised from "no" to "systemd"
+- update dir from "./" to "/var/lib/redis"
+
+```
+supervised systemd
+...
+dir /var/lib/redis
+ 
+```
+- configure redis.service file
+
+```
     vi /etc/systemd/system/redis.service
-        - Paste this in redis.service file
-           "[Unit]
-            Description=Redis In-Memory Data Store
-            After=network.target
 
-            [Service]
-            User=redis
-            Group=redis
-            ExecStart=/usr/local/bin/redis-server /etc/redis/redis.conf
-            ExecStop=/usr/local/bin/redis-cli shutdown
-            Restart=always
+```
+content
 
-            [Install]
-            WantedBy=multi-user.target"
+
+```
+[Unit]
+Description=Redis In-Memory Data Store
+After=network.target
+
+[Service]
+User=redis
+Group=redis
+ExecStart=/usr/local/bin/redis-server /etc/redis/redis.conf
+ExecStop=/usr/local/bin/redis-cli shutdown
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+
+```
+configure user
+            
+```
       adduser --system --group --no-create-home redis
       mkdir /var/lib/redis
       chown redis:redis /var/lib/redis
       chmod 770 /var/lib/redis
       systemctl start redis
+```
       
 switch back to user
 
 
-## Clone chainpay repo (/home/ubuntu/chainpay in this case)
+## Clone chainpay repo 
+
     git clone https://github.com/arbach/chainpay.git
 
 ## Installing node modules
-    - Install required node modules by executing command `sudo npm install` in root directory of the project
-    - Copy .env.example file to .env
-    - Install yarn (npm install -g yarn)    
+- Install required node modules by executing command 
+        `sudo npm install` 
+in root directory of the project
+- Copy .env.example file to .env
+- Install yarn (npm install -g yarn)    
 
 ## Setting up database
-    - Before launching main application, please make sure you have a mysql database named `ethereum_api`. To do that, open your mysql terminal as root (`mysql -uroot -p`) and run command `create database ethereum_api`.
+- Before launching main application, please make sure you have a mysql database named `ethereum_api`. To do that, open your mysql terminal as root (`mysql -uroot -p`) and run command `create database ethereum_api`.
 
 ## Starting ethereum node
-    - You should have an ethereum node configured to launch main app. For this guide, we will assume that you have setup a rinkeby node.
+- You should have an ethereum node configured to launch main app. For this guide, we will assume that you have setup a rinkeby node.
 
-## Configuration (This guide assumes you are using rinkeby as ethereum node)
+## Configuration 
+(This guide assumes you are using rinkeby as ethereum node)
   ENV file should be configured before running application. Some important env variables are:
 
       - NODE_ENV:
@@ -100,18 +146,25 @@ switch back to user
 
 ## Before initialization:
 ### Please make sure you have updated .env file
-     - contain correct mysql credentials
-     - contain correct redis credentials
-     - contains correct PROVIDER_TYPE (testrpc for development and rinkeby for production) and PROVIDER_URL (should be according to provider type)
-     - NODE_ENV is set to required environment (development or production)
-     - contains DEFAULT_ADDRESS and it's encrypted PRIVATE_KEY. To encrypt/decrypt a private key, use
-        "npm run crypto encrypt/decrypt {PRIVATE_KEY} [SECRET_KEY]"
-        where PRIVATE_KEY is private_key to encrypt/decrypt and SECRET_KEY is optional password phrase used to encrypt/decrypt. If not provided, will use SECRET_KEY from .env
+
+- contain correct mysql credentials
+- contain correct redis credentials
+- contains correct PROVIDER_TYPE (testrpc for development and rinkeby for production) and PROVIDER_URL (should be according to provider type)
+- NODE_ENV is set to required environment (development or production)
+- contains DEFAULT_ADDRESS and it's encrypted PRIVATE_KEY. To encrypt/decrypt a private key, use
+
+        npm run crypto encrypt/decrypt {PRIVATE_KEY} [SECRET_KEY]
+
+where PRIVATE_KEY is private_key to encrypt/decrypt and SECRET_KEY is optional password phrase used to encrypt/decrypt. If not provided, will use SECRET_KEY from .env
      - In case of NODE_ENV=production (for rinkeby), should set CONTRACT_ADDRESS(address of ChainPay contract, the middle-man contract, not actual token contract) and PAYMENT_ADDRESS(actual token address)
+     
 ## Initialization:
      - To initialize database, run `npm run initialize`. Please make sure you have NODE_ENV=production in your env file otherwise all your database will be cleared. 
     This script updates default ChainPay address and creates accounts in database from server/json/defaults.json based on network type (rinkey or testrpc)
-### If you get `Client does not support authentication protocol requested by server; consider upgrading MySQL client`
+### Troubleshooting 
+Issue:
+`Client does not support authentication protocol requested by server; consider upgrading MySQL client`
+Solution:
     - ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'password'
 ## Building Project
     - The source code is in ES6 syntax. To convert it into ES5 format, it needs to be build.
