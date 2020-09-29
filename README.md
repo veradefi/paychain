@@ -144,6 +144,11 @@ in root directory of the project
     - PAYMENT_ADDRESS:
       Address of token contract deployed on ethereum node. Used to update account balance.
 
+## Building Project
+    - The source code is in ES6 syntax. To convert it into ES5 format, it needs to be build.
+    - To build project, run `npm run build` command. This command makes sure that all changes in src folder are copied over to /dist folder (main executable folder).
+    - Without building, changes in src folder would not take affect
+
 ## Before initialization:
 ### Please make sure you have updated .env file
 
@@ -166,10 +171,6 @@ Issue:
 `Client does not support authentication protocol requested by server; consider upgrading MySQL client`
 Solution:
     - ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'password'
-## Building Project
-    - The source code is in ES6 syntax. To convert it into ES5 format, it needs to be build.
-    - To build project, run `npm run build` command. This command makes sure that all changes in src folder are copied over to /dist folder (main executable folder).
-    - Without building, changes in src folder would not take affect
 
 # PM2(Recommended Process Manager)
     - pm2 is a good process manager which has been used for this project
@@ -184,21 +185,28 @@ There are 3 components/services that are critical for this application
 
 All these services are supposed to be run in separate servers. However, they can also work together in a single server as well.
 `Important: Before launching main api, please make sure queue and cron manager are working.`
+`Important: Before running any service, please make sure you have build the project. This makes sure all changes in src folder take effect. If you have any service already running, please stop it before building so that there are no restart issues. Alternatively, if you are running each service in separate folders / servers, you can use auto-build and run command by appending ":build" against command name`
 
 ### API Server
     This is the main nodejs server that handles all requests from the client side. It provides routes such as creating accounts, creating new transactions and getting status of a transaction etc. Each transaction is pushed into a redis queue and processed by queue manager.
     To start this service using pm2, run `pm2 start npm --name="api" -- run start`
+    To rebuild project and start this service using pm2, run `pm2 start npm --name="api" -- run start:build`
     To start this service, run `npm start`
+    To rebuild project and start this service, run `npm run start:build`
 
 ### Queue Manager
     This service processes transactions in redis queue using default account provided in .env. It also acts as nonce manager for that address and stores nonce in redis. It fetches 200 transactions from the redis queue and sends them to the Chainpay contract as a single transaction to be processed by contract.
     To start this service using pm2, run `pm2 start npm --name="queue" -- run queue`
+    To rebuild project and start this service using pm2, run `pm2 start npm --name="queue" -- run queue:build`
     To start this service, run `npm run queue` 
+    To rebuild project and start this service, run `npm run queue:build`
 
 ### Cronjob
     This service handles receipts of the transactions from Chainpay contract. It runs every minute and checks all pending transactions for confirmation. If confirmed, it marks them as complete. It also runs another cronjob every minute to see if there are any transactions stuck in queue manager and re-activates them.
     To start this service using pm2, run `pm2 start npm --name="cron" -- run cron`
+    To rebuild project and start this service using pm2, run `pm2 start npm --name="cron" -- run cron:build`
     To start this service using npm, run `npm run cron`
+    To rebuild project and start this service, run `npm run cron:build`
 
 ## Launching main application
     - Run `npm start` in root directory of application

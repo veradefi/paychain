@@ -54,7 +54,7 @@ const processQueue = () => {
         console.log("nonce: ", nonceInt, ", web3Nonce: " , web3Nonce);
 
         const transactions   = await client.lrangeAsync(config.queue.name, 0, 199);
-        const removeCommand  = await client.ltrimAsync(config.queue.name, 199, 100000);
+        const removeCommand  = await client.ltrimAsync(config.queue.name, transactions.length, 100000);
         const nonceIncrement = 1 + nonceInt;
         const multi          = client.multi()
                                      .set(config.queue.name + ":" + default_address, nonceIncrement);
