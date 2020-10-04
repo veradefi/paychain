@@ -118,7 +118,9 @@ module.exports = (sequelize, DataTypes) => {
                     },
                 })
                 .then((fromAcc) => {
-                    if (!fromAcc || fromAcc.balance < this.amount) {
+                    let fromBalance = new BN(fromAcc.balance);
+                    let amount = new BN(this.amount);
+                    if (!fromAcc || fromBalance.cmp(amount) == -1) {
                         next(new Error("Insufficient balance"));
                     } else {
                         next();
