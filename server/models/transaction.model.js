@@ -147,27 +147,32 @@ module.exports = (sequelize, DataTypes) => {
                         { model: sequelize.models.Currency, as: 'currency'},
                     ],
                 })
-                .then(newTransaction => {
-                    sequelize.transaction((t) => {
+                .then(async newTransaction =>  {
+                    if (newTransaction.fromAcc.id != newTransaction.toAcc.id) {
+                      try {
+                        
+                        transaction = await sequelize.transaction();
+
                         let fromBalance = new BN(newTransaction.fromAcc.balance);
                         fromBalance = fromBalance.sub(new BN(newTransaction.amount));
-                        return newTransaction.fromAcc.updateAttributes({
+                        await newTransaction.fromAcc.updateAttributes({
                             balance: fromBalance.toString(),
-                        })
-                        .then(() => {
-                            let toBalance = new BN(newTransaction.toAcc.balance);
-                            toBalance = toBalance.add(new BN(newTransaction.amount));
-                            return newTransaction.toAcc.updateAttributes({
-                                balance: toBalance.toString(),
-                            });
-                        });
-                    })
-                    .then((result) => {
-                         client.rpush(config.queue.name, JSON.stringify(newTransaction), (err, res) => {});
-                    })
-                    .catch((err) => {
-                        throw err;
-                    });
+                        }, transaction);
+
+                        let toBalance = new BN(newTransaction.toAcc.balance);
+                        toBalance = toBalance.add(new BN(newTransaction.amount));
+                        await newTransaction.toAcc.updateAttributes({
+                            balance: toBalance.toString(),
+                        }, transaction);
+
+                        // commit
+                        await transaction.commit();
+                      } catch(err) {
+                        await transaction.rollback()
+                      }
+                      
+                    }
+                    client.rpush(config.queue.name, JSON.stringify(newTransaction), (err, res) => {});
                 });
             },
         }
