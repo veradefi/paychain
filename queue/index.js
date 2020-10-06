@@ -1,3 +1,13 @@
 import { initQueue } from './queue'
+import logger from '../config/papertrail'
 
+process
+  .on('unhandledRejection', (reason, p) => {
+      console.error(reason, 'Unhandled Rejection at Promise');
+      logger.warn(reason);
+  })
+  .on('uncaughtException', err => {
+      console.error(err, 'Uncaught Exception thrown');
+      logger.error(err);
+  });
 initQueue()

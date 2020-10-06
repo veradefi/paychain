@@ -1,6 +1,8 @@
 import { encrypt } from '../helpers/crypto';
 import { getBalance } from '../lib/web3';
 import config from '../../config/config'
+import logger from '../../config/papertrail'
+
 const uuidv1 = require('uuid/v1');
 
 /**
@@ -62,6 +64,7 @@ module.exports = (sequelize, DataTypes) => {
                         })
                         .catch((err) => {
                             console.log(err)
+                            logger.warn(err)
                             resolve(account);
                         });
                 });

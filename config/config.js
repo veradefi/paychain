@@ -52,6 +52,9 @@ const envVarsSchema = Joi.object({
         .default(''),
     PAYMENT_ADDRESS: Joi.string().allow('')
         .default(''),
+    PAPERTRAIL_HOST: Joi.string().allow('')
+        .default(''),
+    PAPERTRAIL_PORT: Joi.number(),
 }).unknown()
     .required();
 
@@ -91,6 +94,10 @@ const config = {
     test: {
         tx_per_sex: envVars.TX_PER_SEC,
     },
+    papertrail: {
+        host: envVars.PAPERTRAIL_HOST,
+        port: envVars.PAPERTRAIL_PORT,
+    }
 };
 
 export default config;

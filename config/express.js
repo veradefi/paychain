@@ -82,6 +82,7 @@ app.use((req, res, next) => {
 if (config.env !== 'test') {
     app.use(expressWinston.errorLogger({
         winstonInstance,
+        msg: 'HTTP {{req.method}} {{req.url}} {{res.statusCode}} {{res.responseTime}}ms',
     }));
 }
 

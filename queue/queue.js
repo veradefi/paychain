@@ -5,6 +5,7 @@ import TransactionManager from './TransactionManager';
 import { shouldRetry } from '../server/helpers/helpers';
 import db from '../config/sequelize'
 import { getTransactionCount, signTransaction, web3 } from '../server/lib/web3';
+import logger from '../config/papertrail'
 import "babel-polyfill";
 
 const transactionManager = new TransactionManager();
@@ -12,7 +13,11 @@ const transactionManager = new TransactionManager();
 let Model = db.Transaction;
 
 const add = (queueType, transaction, delay = 0) => {
-    client.rpush(config.queue.name, JSON.stringify(transaction), (err, res) => {});
+    client.rpush(config.queue.name, JSON.stringify(transaction), (err, res) => {
+        if (err) {
+            logger.error(err)
+        }
+    });
 };
 
 const setStatus = (transaction, status, params) => {
@@ -68,20 +73,22 @@ const processQueue = () => {
                         transactionHash: transactionHash,
                         store_id: nonce,
                         processedAt: new Date(),
-                    }).then(() => {
-                        // done(null, transactionHash);
+                    }).catch((err) => {
+                        logger.warn(err.toString())
                     });
                 }, (transaction, receipt) => {
                     setStatus(transaction, 'completed', {
                         statusDescription: JSON.stringify(receipt),
-                    }).then(() => {
-                        // done(null, receipt);
+                    }).catch((err) => {
+                        logger.warn(err.toString())
                     });
                 }, (transaction, error, nonce) => {
                     setStatus(transaction, 'failed', {
                         statusDescription: error.toString()
                     }).then(() => {
                         add(config.queue.name, transaction);
+                    }).catch((err) => {
+                        logger.warn(err.toString())
                     });
                 }, (err) => {
                     if (!err) {
@@ -90,7 +97,10 @@ const processQueue = () => {
                             .then(() => processQueue())
                             .catch((err) => processQueue());
                     } else {
-                        processQueue();
+                        logger.error(err)
+                        setTimeout(() => {
+                            processQueue();
+                        }, 5000);
                     }
                 });
         } else {
@@ -117,13 +127,18 @@ const initQueue = () => {
     client.watch(config.queue.name + ":" + default_address, async ( err )=> {
         if(err) throw err;
 
-        const count    = await getTransactionCount(default_address);
-        const multi    = await client.multi().set(config.queue.name + ":" + default_address, parseInt(count));
-        const results  = await multi.execAsync();
-        if (results !== null) {
-            // Start first batch of the queue immediately
-            processQueue();
+        try {
+            const count    = await getTransactionCount(default_address);
+            const multi    = await client.multi().set(config.queue.name + ":" + default_address, parseInt(count));
+            const results  = await multi.execAsync();
+            if (results !== null) {
+                // Start first batch of the queue immediately
+                processQueue();
+            }    
+        } catch(e) {
+            logger.error(e)
         }
+        
     });
 
 };

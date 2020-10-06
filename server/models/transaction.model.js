@@ -2,6 +2,7 @@
 import client from '../../queue/client'
 import config from '../../config/config'
 import async from 'async';
+import logger from '../../config/papertrail'
 import BN from 'bn.js'
 const uuidv1 = require('uuid/v1');
 /**
@@ -168,11 +169,16 @@ module.exports = (sequelize, DataTypes) => {
                         // commit
                         await transaction.commit();
                       } catch(err) {
+                        logger.error(err)
                         await transaction.rollback()
                       }
                       
                     }
-                    client.rpush(config.queue.name, JSON.stringify(newTransaction), (err, res) => {});
+                    client.rpush(config.queue.name, JSON.stringify(newTransaction), (err, res) => {
+                        if (err) {
+                            logger.error(err)
+                        }
+                    });
                 });
             },
         }

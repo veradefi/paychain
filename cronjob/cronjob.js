@@ -4,6 +4,7 @@ import config from '../config/config'
 
 import { getReceipt } from '../server/lib/web3';
 import { add as addToQueue } from '../queue/queue';
+import logger from '../config/papertrail'
 
 const Transaction = db.Transaction;
 
@@ -37,7 +38,7 @@ const generateBulkQuery = (transactions) => {
 
                 }
             })
-            .catch(console.error);
+            .catch(logger.warn);
     }
 };
 
@@ -96,7 +97,7 @@ const processStuckTransactions = () => {
               addToQueue(config.queue.name, transactions[i]);
           }
       })
-      .catch(console.log);
+      .catch(logger.warn);
 };
 
 const processQueueTransactions = () => {
@@ -107,7 +108,7 @@ const processQueueTransactions = () => {
               addToQueue(config.queue.name, transactions[i]);
           }
       })
-      .catch(console.log);
+      .catch(logger.warn);
 };
 
 const processPendingTransactions = () => {
@@ -117,7 +118,7 @@ const processPendingTransactions = () => {
           console.log("pending confirmation: ", transactions.length)
           // console.log(transactions.length)
       })
-      .catch(console.log);
+      .catch(logger.warn);
 };
 
 // Runs a task every minute
