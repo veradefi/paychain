@@ -11,7 +11,7 @@
     "yarn": ">=0.20.3"
   },
   "scripts": {
-    "start": "nodemon ./dist/index",
+    "start": "nodemon ./dist/index.js",
     "start:build": "gulp serve",
     "queue": "nodemon ./dist/queue/index.js",
     "queue:build": "yarn build && nodemon ./dist/queue/index.js",
@@ -67,7 +67,8 @@
     "supertest-as-promised": "4.0.2",
     "uuid": "^3.3.2",
     "web3": "^1.0.0-beta.34",
-    "winston": "2.3.0"
+    "winston": "2.3.0",
+    "winston-papertrail": "^1.0.5"
   },
   "devDependencies": {
     "babel-cli": "6.18.0",

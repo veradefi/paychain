@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import _ from 'lodash';
 import config from './config';
+import logger from '../config/papertrail'  
 
 const db = {};
 
@@ -43,8 +44,11 @@ sequelize
         console.log('Database synchronized');
     })
     .catch((err) => {
-        console.log(err);
         console.log('An error occured %j', err);
+        logger.error(err)
+        setTimeout(() => {
+            process.exit(1)
+        }, 2000)
     });
 
 // assign the sequelize variables to the db object and returning the db.
