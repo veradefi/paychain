@@ -48,7 +48,7 @@ sequelize
         logger.error(err)
         setTimeout(() => {
             process.exit(1)
-        }, 2000)
+        }, 5000)
     });
 
 // assign the sequelize variables to the db object and returning the db.

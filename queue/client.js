@@ -15,8 +15,12 @@ if (!client) {
 
 client.on('error', function (err) {
   if(err.code == "ECONNREFUSED" || err.code == "NR_CLOSED" || err.code == "CONNECTION_BROKEN") {
+    console.log("Redis Err: %j", err)
     logger.error(err)
     client.quit();
+    setTimeout(() => {
+      process.exit(1)
+    }, 5000)
   }
 });
 
