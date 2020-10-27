@@ -146,6 +146,7 @@ fi
 if [ $step -lt "7" ] 
 then
     # Initialize 
+    npm run build
     npm run initialize
 
     pm2 start npm --name="chainpay cron"  -- run cron
