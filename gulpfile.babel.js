@@ -9,7 +9,7 @@ const polyfill = './node_modules/gulp-babel/node_modules/babel-core/browser-poly
 
 const paths = {
     js: ['./**/*.js', '!dist/**', '!node_modules/**', '!coverage/**'],
-    nonJs: ['./package.json', './.gitignore', './.env'],
+    nonJs: ['./package.json', './.gitignore', './.env', './.env.sandbox'],
     tests: './server/tests/*.js',
     public: ['./server/public/**/*.html', './server/public/**/*.css'],
     json: ['./server/json/*.json']
