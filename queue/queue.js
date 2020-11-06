@@ -74,13 +74,13 @@ const processQueue = () => {
                         store_id: nonce,
                         processedAt: new Date(),
                     }).catch((err) => {
-                        logger.warn(err.toString())
+                        logger.warn(err)
                     });
                 }, (transaction, receipt) => {
                     setStatus(transaction, 'completed', {
                         statusDescription: JSON.stringify(receipt),
                     }).catch((err) => {
-                        logger.warn(err.toString())
+                        logger.warn(err)
                     });
                 }, (transaction, error, nonce) => {
                     setStatus(transaction, 'failed', {
@@ -88,7 +88,7 @@ const processQueue = () => {
                     }).then(() => {
                         add(config.queue.name, transaction);
                     }).catch((err) => {
-                        logger.warn(err.toString())
+                        logger.warn(err)
                     });
                 }, (err) => {
                     if (!err) {

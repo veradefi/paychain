@@ -8,5 +8,5 @@ io.on('connection', function (socket) {
     console.log("connected");
 });
 
-server.listen(config.socket_port);
+// server.listen(config.socket_port);
 export default io;

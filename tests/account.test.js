@@ -8,20 +8,10 @@ import app from '../index';
 
 chai.config.includeStack = true;
 
-/**
- * root level hooks
- */
-before(() => {
-    db.sequelize.sync();
-});
-
-after(() => {
-    db.Account.drop();
-});
-
 describe('## Account APIs', () => {
     let account = {
-        balance: 10,
+        address: '0x4600AF44C9990a9F68255463B7Cb8F5Fa82A472B',
+        privateKey: '0x26020dde5a28225faed8d6a6cbfb929e29473513ac0a91dfa02f598be81e02ff',
     };
 
     describe('# POST /api/accounts', () => {
@@ -29,9 +19,9 @@ describe('## Account APIs', () => {
             request(app)
                 .post('/api/accounts')
                 .send(account)
-                .expect(httpStatus.OK)
+                .expect(httpStatus.CREATED)
                 .then((res) => {
-                    expect(res.body.balance).to.equal(account.balance);
+                    expect(res.body.address).to.equal(account.address);
                     account = res.body;
                     done();
                 })
@@ -57,7 +47,7 @@ describe('## Account APIs', () => {
                 .get('/api/accounts/12345')
                 .expect(httpStatus.NOT_FOUND)
                 .then((res) => {
-                    expect(res.body.message).to.equal('Not Found');
+                    expect(res.body.message).to.equal('Account does not exist');
                     done();
                 })
                 .catch(done);

@@ -3,41 +3,59 @@
 import request from 'supertest-as-promised';
 import httpStatus from 'http-status';
 import chai, { expect } from 'chai';
-import db from '../config/sequelize';
+import config from '../config/config';
 import app from '../index';
 
 chai.config.includeStack = true;
+let apiAccounts = []
 
-/**
- * root level hooks
- */
-before(() => {
-    db.sequelize.sync();
-    db.Currency.create({
-        full_name: 'My Token',
-        short_name: 'My Token',
-        symbol: 'MYT',
+function getRandom (minimum, maximum) {
+    return Math.floor(Math.random() * (maximum - minimum + 1)) + minimum;
+};
+
+function getApiAccounts() {
+    return new Promise((resolve, reject) => {
+        request(config.api_url)
+            .get('/api/accounts')
+            .expect(httpStatus.OK)
+            .then((res) => {
+
+                apiAccounts = res.body;
+                resolve(apiAccounts);
+            })
+            .catch(reject);
     });
-});
+};
 
-after(() => {
-    db.Transaction.drop();
-});
+function getRandomAccountId() {
+    const randomNumber = getRandom(0, apiAccounts.length - 1);
+    const randomAccount = apiAccounts[randomNumber];
+    if (randomAccount) {
+        return randomAccount.id;
+    }
+}
 
 describe('## Transaction APIs', () => {
     let transaction = {
-        amount: 100,
-        to: 1,
-        from: 1,
-        currency_id: 1,
-    };
-
+        amount: '100'
+    }
     describe('# POST /api/transactions', () => {
+        before((done) => {
+            getApiAccounts().then(() => done()).catch(done);
+        });
+          
         it('should create a new transaction', (done) => {
+                
+            transaction = {
+                amount: '100',
+                to: getRandomAccountId(),
+                from: getRandomAccountId(),
+            };
+
             request(app)
                 .post('/api/transactions')
                 .send(transaction)
-                .expect(httpStatus.OK)
+                .expect(httpStatus.CREATED)
                 .then((res) => {
                     expect(res.body.amount).to.equal(transaction.amount);
                     expect(res.body.to).to.equal(transaction.to);
@@ -68,7 +86,7 @@ describe('## Transaction APIs', () => {
                 .get('/api/transactions/12345')
                 .expect(httpStatus.NOT_FOUND)
                 .then((res) => {
-                    expect(res.body.message).to.equal('Not Found');
+                    expect(res.body.message).to.equal('Transaction does not exist');
                     done();
                 })
                 .catch(done);

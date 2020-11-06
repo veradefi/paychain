@@ -11,12 +11,12 @@
     "yarn": ">=0.20.3"
   },
   "scripts": {
-    "start": "nodemon ./dist/index.js",
+    "start": "node ./dist/index.js",
     "start:build": "gulp serve",
-    "queue": "nodemon ./dist/queue/index.js",
-    "queue:build": "yarn build && nodemon ./dist/queue/index.js",
-    "cron": "nodemon ./dist/cronjob/index.js",
-    "cron:build": "yarn build && nodemon ./dist/cronjob/index.js",
+    "queue": "node ./dist/queue/index.js",
+    "queue:build": "yarn build && node ./dist/queue/index.js",
+    "cron": "node ./dist/cronjob/index.js",
+    "cron:build": "yarn build && node ./dist/cronjob/index.js",
     "initialize": "node ./dist/scripts/init.js",
     "initialize:build": "yarn build && node ./dist/scripts/init.js",
     "crypto": "node ./dist/scripts/encrypt.js",
@@ -28,7 +28,7 @@
     "beautify": "es-beautifier -u -c .eslintrc.js *.js server config",
     "test": "cross-env NODE_ENV=test ./node_modules/.bin/mocha --ui bdd --reporter spec --slow 0 --colors --compilers js:babel-core/register tests/stress --recursive --timeout 150000",
     "test:watch": "yarn test -- --watch",
-    "test:coverage": "cross-env NODE_ENV=test ./node_modules/.bin/istanbul cover _mocha -- --ui bdd --reporter spec --colors --compilers js:babel-core/register tests --recursive",
+    "test:coverage": "cross-env NODE_ENV=test ./node_modules/.bin/istanbul cover _mocha -- --ui bdd --reporter spec --colors --compilers js:babel-core/register tests/stress --recursive",
     "test:check-coverage": "yarn test:coverage && istanbul check-coverage",
     "report-coverage": "coveralls < ./coverage/lcov.info"
   },

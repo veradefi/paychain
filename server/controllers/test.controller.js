@@ -6,10 +6,6 @@ import fs from 'fs';
 import io from '../../config/socket';
 import db from '../../config/sequelize';
 import config from '../../config/config';
-import Token from '../../../build/contracts/TestERC20.json';
-import { getAllAccounts, web3 } from '../lib/web3';
-import { decrypt } from '../helpers/crypto';
-
 const Account = db.Account;
 
 function index(req, res, next) {
