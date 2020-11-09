@@ -7,60 +7,59 @@ const result = require('dotenv').config({ path: path.join(__dirname, '../.env.sa
 if (result.error) {
     throw result.error
 }
-console.log(result.parsed)
 
 // define validation for all the env vars
 const envVarsSchema = Joi.object({
-    NODE_ENV: Joi.string()
+    NODE_ENV: process.env.NODE_ENV || Joi.string()
         .allow(['development', 'production', 'test', 'provision'])
         .default('development'),
-    PORT: Joi.number()
+    PORT: process.env.PORT || Joi.number()
         .default(4000),
-    API_URL: Joi.string()
+    API_URL: process.env.API_URL || Joi.string()
         .default('http://localhost:4000')
         .description('Api url'),
-    SECRET_KEY: Joi.string().required()
+    SECRET_KEY: process.env.SECRET_KEY || Joi.string().required()
         .description('Secret required to sign'),
-    MYSQL_DB: Joi.string().required()
+    MYSQL_DB: process.env.MYSQL_DB || Joi.string().required()
         .description('MYSQL database name'),
-    MYSQL_PORT: Joi.number()
+    MYSQL_PORT: process.env.MYSQL_PORT || Joi.number()
         .default(3606),
-    MYSQL_HOST: Joi.string()
+    MYSQL_HOST: process.env.MYSQL_HOST || Joi.string()
         .default('localhost'),
-    MYSQL_USER: Joi.string().required()
+    MYSQL_USER: process.env.MYSQL_USER || Joi.string().required()
         .description('MYSQL username'),
-    MYSQL_PASSWD: Joi.string().allow('')
+    MYSQL_PASSWD: process.env.MYSQL_PASSWD || Joi.string().allow('')
         .description('MYSQL password'),
-    PROVIDER_URL: Joi.string()
+    PROVIDER_URL: process.env.PROVIDER_URL || Joi.string()
         .default('http://localhost:8545'),
-    PROVIDER_TYPE: Joi.string()
+    PROVIDER_TYPE: process.env.PROVIDER_TYPE || Joi.string()
         .allow(['testrpc', 'rinkeby', 'mainnet'])
         .default('testrpc'),
-    ENTROPY: Joi.string()
+    ENTROPY: process.env.ENTROPY || Joi.string()
         .default('54674321§3456764321§345674321§3453647544±±±§±±±!!!43534534534534'),
-    TX_PER_SEC: Joi.number()
+    TX_PER_SEC: process.env.TX_PER_SEC || Joi.number()
         .default(100),
-    QUEUE_NAME: Joi.string()
+    QUEUE_NAME: process.env.QUEUE_NAME || Joi.string()
         .default('transactions'),
-    QUEUE_HOST: Joi.string()
+    QUEUE_HOST: process.env.QUEUE_HOST || Joi.string()
         .default('127.0.0.1'),
-    QUEUE_PORT: Joi.number()
+    QUEUE_PORT: process.env.QUEUE_PORT || Joi.number()
         .default(6379),
-    QUEUE_PWD: Joi.string().allow('')
+    QUEUE_PWD: process.env.QUEUE_PWD || Joi.string().allow('')
         .default(''),
-    SOCKET_PORT: Joi.number()
+    SOCKET_PORT: process.env.SOCKET_PORT || Joi.number()
         .default(1337),
-    DEFAULT_ADDRESS: Joi.string().allow('')
+    DEFAULT_ADDRESS: process.env.DEFAULT_ADDRESS || Joi.string().allow('')
         .default(''),
-    PRIVATE_KEY: Joi.string().allow('')
+    PRIVATE_KEY: process.env.PRIVATE_KEY || Joi.string().allow('')
         .default(''),
-    CONTRACT_ADDRESS: Joi.string().allow('')
+    CONTRACT_ADDRESS: process.env.CONTRACT_ADDRESS || Joi.string().allow('')
         .default(''),
-    PAYMENT_ADDRESS: Joi.string().allow('')
+    PAYMENT_ADDRESS: process.env.PAYMENT_ADDRESS || Joi.string().allow('')
         .default(''),
-    PAPERTRAIL_HOST: Joi.string().allow('')
+    PAPERTRAIL_HOST: process.env.PAPERTRAIL_HOST || Joi.string().allow('')
         .default(''),
-    PAPERTRAIL_PORT: Joi.number(),
+    PAPERTRAIL_PORT: process.env.PAPERTRAIL_PORT || Joi.number(),
 }).unknown()
     .required();
 
@@ -106,5 +105,7 @@ const config = {
         port: envVars.PAPERTRAIL_PORT,
     }
 };
+
+console.log(config)
 
 export default config;
