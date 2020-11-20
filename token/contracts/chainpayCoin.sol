@@ -61,7 +61,7 @@ contract Ownable {
 	 * @dev The Ownable constructor sets the original `owner` of the contract to the sender
 	 * account.
 	 */
-	function Ownable() public {
+	constructor() public {
 		owner = msg.sender;
 	}
 
@@ -79,7 +79,7 @@ contract Ownable {
 	 */
 	function transferOwnership(address newOwner) public onlyOwner {
 		require(newOwner != address(0));
-		OwnershipTransferred(owner, newOwner);
+		emit OwnershipTransferred(owner, newOwner);
 		owner = newOwner;
 	}
 
@@ -139,7 +139,7 @@ contract BasicToken is ERC20Basic {
 		// SafeMath.sub will throw if there is not enough balance.
 		balances[msg.sender] = balances[msg.sender].sub(_value);
 		balances[_to] = balances[_to].add(_value);
-		Transfer(msg.sender, _to, _value);
+		emit Transfer(msg.sender, _to, _value);
 		return true;
 	}
 
@@ -181,7 +181,7 @@ contract StandardToken is ERC20, BasicToken {
 		balances[_from] = balances[_from].sub(_value);
 		balances[_to] = balances[_to].add(_value);
 		allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_value);
-		Transfer(_from, _to, _value);
+		emit Transfer(_from, _to, _value);
 		return true;
 	}
 
@@ -197,7 +197,7 @@ contract StandardToken is ERC20, BasicToken {
 	 */
 	function approve(address _spender, uint256 _value) public returns (bool) {
 		allowed[msg.sender][_spender] = _value;
-		Approval(msg.sender, _spender, _value);
+		emit Approval(msg.sender, _spender, _value);
 		return true;
 	}
 
@@ -223,7 +223,7 @@ contract StandardToken is ERC20, BasicToken {
 	 */
 	function increaseApproval(address _spender, uint _addedValue) public returns (bool) {
 		allowed[msg.sender][_spender] = allowed[msg.sender][_spender].add(_addedValue);
-		Approval(msg.sender, _spender, allowed[msg.sender][_spender]);
+		emit Approval(msg.sender, _spender, allowed[msg.sender][_spender]);
 		return true;
 	}
 
@@ -244,9 +244,128 @@ contract StandardToken is ERC20, BasicToken {
 		} else {
 			allowed[msg.sender][_spender] = oldValue.sub(_subtractedValue);
 		}
-		Approval(msg.sender, _spender, allowed[msg.sender][_spender]);
+		emit Approval(msg.sender, _spender, allowed[msg.sender][_spender]);
 		return true;
 	}
+
+}
+
+/**
+ * @title whitelist 
+ * @dev A token to manage whitelisting
+ * `StandardToken` functions.
+ */
+ 
+ contract Whitelist is Ownable {
+  event WhitelistedAddressAdded(address addr);
+  event WhitelistedAddressRemoved(address addr);
+  event WhitelistStatusChanged(bool isWhitelistingEnabled);
+    
+  mapping (address => bool) private whitelistedAddresses;
+  bool private isWhitelistingEnabled = true;
+
+  /**
+   * @dev Throws if called by any account that's not whitelisted.
+   */
+  modifier onlyWhitelisted(address addr) {
+    require(whitelist(addr));
+    _;
+  }
+  
+  /**
+   * @dev add an address to the whitelist
+   * @param addr address
+   * @return true if the address was added to the whitelist, false if the address was already in the whitelist
+   */
+  function addAddressToWhitelist(address addr)
+    onlyOwner
+    public
+  {
+    whitelistedAddresses[addr] = true;
+    emit WhitelistedAddressAdded(addr);
+  }
+
+  /**
+   * @dev getter to determine if address is in whitelist
+   */
+  function whitelist(address addr)
+    public
+    view
+    returns (bool)
+  {
+    return whitelistedAddresses[addr] || !isWhitelistingEnabled;
+  }
+
+  /**
+   * @dev add addresses to the whitelist
+   * @param addrs addresses
+   * @return true if at least one address was added to the whitelist,
+   * false if all addresses were already in the whitelist
+   */
+  function addAddressesToWhitelist(address[] addrs)
+    onlyOwner
+    public
+  {
+    for (uint256 i = 0; i < addrs.length; i++) {
+      addAddressToWhitelist(addrs[i]);
+    }
+  }
+
+  /**
+   * @dev remove an address from the whitelist
+   * @param addr address
+   * @return true if the address was removed from the whitelist,
+   * false if the address wasn't in the whitelist in the first place
+   */
+  function removeAddressFromWhitelist(address addr)
+    onlyOwner
+    public
+  {
+    whitelistedAddresses[addr] = false;
+    emit WhitelistedAddressRemoved(addr);
+  }
+
+  /**
+   * @dev remove addresses from the whitelist
+   * @param addrs addresses
+   * @return true if at least one address was removed from the whitelist,
+   * false if all addresses weren't in the whitelist in the first place
+   */
+  function removeAddressesFromWhitelist(address[] addrs)
+    onlyOwner
+    public
+  {
+    for (uint256 i = 0; i < addrs.length; i++) {
+      removeAddressFromWhitelist(addrs[i]);
+    }
+  }
+  
+  /**
+   * @dev enable/disable whitelisting
+   * @param _isWhitelistingEnabled bool
+   */
+  function toggleWhitelisting(bool _isWhitelistingEnabled)
+    onlyOwner
+    public
+  {
+    
+    isWhitelistingEnabled = _isWhitelistingEnabled;
+    emit WhitelistStatusChanged(isWhitelistingEnabled);
+  }
+  
+  /**
+   * @dev get whitelisting status
+   * @return true if whitelisting is enabled, false whitelisting disabled
+   */
+  function getWhitelistingStatus()
+    onlyOwner
+    public
+    view
+    returns (bool)
+  {
+    
+    return isWhitelistingEnabled;
+  }
 
 }
 
@@ -255,7 +374,7 @@ contract StandardToken is ERC20, BasicToken {
  * @dev ERC20 Token, where all tokens are pre-minted.
  * `StandardToken` functions.
  */
-contract chainpayCoin is StandardToken, Ownable {
+contract chainpayCoin is StandardToken, Whitelist {
 
 	using SafeMath for uint256;
 
@@ -275,7 +394,7 @@ contract chainpayCoin is StandardToken, Ownable {
 	/**
 	 * @dev Constructor that gives msg.sender all of existing tokens.
 	 */
-	function chainpayCoin() public {
+	constructor() public {
 		totalSupply_ = INITIAL_SUPPLY;
 		balances[msg.sender] = INITIAL_SUPPLY;
 	}
@@ -294,6 +413,9 @@ contract chainpayCoin is StandardToken, Ownable {
 	*/
 	function transfer(address _to, uint256 _value) public returns (bool) {
 		require(transferStatus || msg.sender == owner);
+		if (msg.sender != owner) {
+		    require(whitelist(_to)); 
+		}
 		return super.transfer(_to, _value);
 	}
 
@@ -305,6 +427,10 @@ contract chainpayCoin is StandardToken, Ownable {
 	*/
 	function transferFrom(address _from, address _to, uint256 _value) public returns (bool) {
 		require(transferStatus || msg.sender == owner);
+		if (msg.sender != owner) {
+		    require(whitelist(_to)); 
+		    require(whitelist(_from));
+		}
 		return super.transferFrom(_from, _to, _value);
 	}
 
@@ -321,7 +447,7 @@ contract chainpayCoin is StandardToken, Ownable {
 		// SafeMath.sub will throw if there is not enough balance.
 		balances[_from] = balances[_from].sub(_value);
 		balances[_to] = balances[_to].add(_value);
-		Transmit(_from, _to, _value);
+		emit Transmit(_from, _to, _value);
 		return true;
 	}
 
@@ -331,7 +457,7 @@ contract chainpayCoin is StandardToken, Ownable {
 	function disableTransmit() public onlyOwner {
 		require(transmitStatus);
 		transmitStatus = false;
-		TransmitDisabled();
+		emit TransmitDisabled();
 	}
 
 	/**
@@ -354,7 +480,7 @@ contract chainpayCoin is StandardToken, Ownable {
 	*/
 	function disableTransfer() public onlyOwner {
 		transferStatus = false;
-		TransferStatus(transferStatus);
+		emit TransferStatus(transferStatus);
 	}
 
 	/**
@@ -362,6 +488,6 @@ contract chainpayCoin is StandardToken, Ownable {
 	*/
 	function enableTransfer() public onlyOwner {
 		transferStatus = true;
-		TransferStatus(transferStatus);
+		emit TransferStatus(transferStatus);
 	}
 }
