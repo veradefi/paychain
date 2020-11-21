@@ -93,6 +93,18 @@ contract('chainpayCoin' , (accounts) => {
 		assert.isTrue(transferStatus == false);
 	});
 
+	it('should allow to disable whitelisting' , async () => {
+		await tokenInstance.toggleWhitelisting(false);
+		var isWhitelistingEnabled = await tokenInstance.getWhitelistingStatus();
+		assert.isTrue(isWhitelistingEnabled == false);
+	});
+
+	it('should allow to enable whitelisting' , async () => {
+		await tokenInstance.toggleWhitelisting(true);
+		var isWhitelistingEnabled = await tokenInstance.getWhitelistingStatus();
+		assert.isTrue(isWhitelistingEnabled == true);
+	});
+
 	it('should reject other account to transfer tokens' , async () => {
 		var account1 = owner;
 		var account2 = accounts[1];
@@ -118,7 +130,7 @@ contract('chainpayCoin' , (accounts) => {
 		assert_throw(tokenInstance.transfer(account2 , unit , {from: account1}));
 	});
 
-	it('should allow other account to transfer tokens after enable transfer status' , async () => {
+	it('should not allow other account to transfer tokens if it is not whitelisted and whitelisting is enabled', async () => {
 		var account1 = owner;
 		var account2 = accounts[1];
 		var unit = 10E18;
@@ -135,6 +147,114 @@ contract('chainpayCoin' , (accounts) => {
 		assert.equal(balanceBeforeReceiver.toNumber() , balanceAfterReceiver.toNumber() - unit , 'receiver balance should be increased');
 
 		await tokenInstance.enableTransfer();
+
+		var isWhitelistingEnabled = await tokenInstance.getWhitelistingStatus();
+		assert.isTrue(isWhitelistingEnabled == true);
+
+		var account1 = accounts[1];
+		var account2 = owner;
+
+		var balanceBeforeSender = await tokenInstance.balanceOf.call(account1);
+		var balanceBeforeReceiver = await tokenInstance.balanceOf.call(account2);
+
+		assert_throw(tokenInstance.transfer(account2 , unit , {from: account1}));
+	});
+
+	it('should allow other account to transfer tokens whitelisting is disabled', async () => {
+		var account1 = owner;
+		var account2 = accounts[1];
+		var unit = 10E18;
+
+		var balanceBeforeSender = await tokenInstance.balanceOf.call(account1);
+		var balanceBeforeReceiver = await tokenInstance.balanceOf.call(account2);
+
+		await tokenInstance.transfer(account2 , unit , {from: account1});
+
+		var balanceAfterSender = await tokenInstance.balanceOf.call(account1);
+		var balanceAfterReceiver = await tokenInstance.balanceOf.call(account2);
+
+		assert.equal(balanceBeforeSender.toNumber() , balanceAfterSender.toNumber() + unit , 'sender balance should be decreased');
+		assert.equal(balanceBeforeReceiver.toNumber() , balanceAfterReceiver.toNumber() - unit , 'receiver balance should be increased');
+
+		await tokenInstance.enableTransfer();
+		await tokenInstance.toggleWhitelisting(false)
+
+		var isWhitelistingEnabled = await tokenInstance.getWhitelistingStatus();
+		assert.isTrue(isWhitelistingEnabled == false);
+
+		var account1 = accounts[1];
+		var account2 = owner;
+
+		var balanceBeforeSender = await tokenInstance.balanceOf.call(account1);
+		var balanceBeforeReceiver = await tokenInstance.balanceOf.call(account2);
+
+		await tokenInstance.transfer(account2 , unit , {from: account1});
+
+		var balanceAfterSender = await tokenInstance.balanceOf.call(account1);
+		var balanceAfterReceiver = await tokenInstance.balanceOf.call(account2);
+
+		assert.equal(balanceBeforeSender.toNumber() , balanceAfterSender.toNumber() + unit , 'sender balance should be decreased');
+		assert.equal(balanceBeforeReceiver.toNumber() , balanceAfterReceiver.toNumber() - unit , 'receiver balance should be increased');
+	});
+
+	it('should allow other account to transfer tokens if it is whitelisted and whitelisting is enabled', async () => {
+		var account1 = owner;
+		var account2 = accounts[1];
+		var unit = 10E18;
+
+		var balanceBeforeSender = await tokenInstance.balanceOf.call(account1);
+		var balanceBeforeReceiver = await tokenInstance.balanceOf.call(account2);
+
+		await tokenInstance.transfer(account2 , unit , {from: account1});
+
+		var balanceAfterSender = await tokenInstance.balanceOf.call(account1);
+		var balanceAfterReceiver = await tokenInstance.balanceOf.call(account2);
+
+		assert.equal(balanceBeforeSender.toNumber() , balanceAfterSender.toNumber() + unit , 'sender balance should be decreased');
+		assert.equal(balanceBeforeReceiver.toNumber() , balanceAfterReceiver.toNumber() - unit , 'receiver balance should be increased');
+
+		await tokenInstance.enableTransfer();
+		await tokenInstance.addAddressToWhitelist(account2)
+
+		var isWhitelistingEnabled = await tokenInstance.getWhitelistingStatus();
+		assert.isTrue(isWhitelistingEnabled == true);
+
+		var account1 = accounts[1];
+		var account2 = owner;
+
+		var balanceBeforeSender = await tokenInstance.balanceOf.call(account1);
+		var balanceBeforeReceiver = await tokenInstance.balanceOf.call(account2);
+
+		await tokenInstance.transfer(account2 , unit , {from: account1});
+
+		var balanceAfterSender = await tokenInstance.balanceOf.call(account1);
+		var balanceAfterReceiver = await tokenInstance.balanceOf.call(account2);
+
+		assert.equal(balanceBeforeSender.toNumber() , balanceAfterSender.toNumber() + unit , 'sender balance should be decreased');
+		assert.equal(balanceBeforeReceiver.toNumber() , balanceAfterReceiver.toNumber() - unit , 'receiver balance should be increased');
+	});
+
+	it('should allow other account to transfer tokens after enable transfer status' , async () => {
+		var account1 = owner;
+		var account2 = accounts[1];
+		var unit = 10E18;
+
+		var balanceBeforeSender = await tokenInstance.balanceOf.call(account1);
+		var balanceBeforeReceiver = await tokenInstance.balanceOf.call(account2);
+
+		await tokenInstance.transfer(account2 , unit , {from: account1});
+
+		var balanceAfterSender = await tokenInstance.balanceOf.call(account1);
+		var balanceAfterReceiver = await tokenInstance.balanceOf.call(account2);
+		
+		assert.equal(balanceBeforeSender.toNumber() , balanceAfterSender.toNumber() + unit , 'sender balance should be decreased');
+		assert.equal(balanceBeforeReceiver.toNumber() , balanceAfterReceiver.toNumber() - unit , 'receiver balance should be increased');
+
+		await tokenInstance.enableTransfer();
+		await tokenInstance.addAddressToWhitelist(account2);
+
+		var isWhitelistingEnabled = await tokenInstance.getWhitelistingStatus();
+		assert.isTrue(isWhitelistingEnabled == true);
 
 		var account1 = accounts[1];
 		var account2 = owner;
@@ -390,7 +510,7 @@ contract('chainpayCoin' , (accounts) => {
 		var count = 0;
 		for (var i = 1; i < accounts.length; i++) {
 			users.push(accounts[i]);
-			amounts.push((i * 1E18));
+			amounts.push((i * 1E15));
 			count = i;
 		}
 
@@ -399,6 +519,8 @@ contract('chainpayCoin' , (accounts) => {
 		assert.equal(count , listCount.toNumber() , 'Count of User List should match after Adding Users');
 
 		await tokenInstance.enableTransfer({from: account1});
+
+		await tokenInstance.toggleWhitelisting(false);
 
 		await tokenInstance.transfer(saleInstance.address , (10000 * 1E18), {from: account1});
 		

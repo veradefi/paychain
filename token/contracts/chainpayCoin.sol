@@ -209,7 +209,7 @@ interface IERC20 {
     view
     returns (bool)
   {
-    return whitelistedAddresses[addr] || !isWhitelistingEnabled;
+    return whitelistedAddresses[addr] || !isWhitelistingEnabled || addr == owner();
   }
 
   /**
@@ -539,6 +539,7 @@ contract chainpayCoin is ERC20 {
 		require(transferStatus || msg.sender == owner());
 		if (msg.sender != owner()) {
 		    require(whitelist(_to)); 
+        require(whitelist(msg.sender)); 
 		}
 		return super.transfer(_to, _value);
 	}
