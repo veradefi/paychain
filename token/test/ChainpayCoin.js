@@ -93,16 +93,107 @@ contract('chainpayCoin' , (accounts) => {
 		assert.isTrue(transferStatus == false);
 	});
 
-	it('should allow to disable whitelisting' , async () => {
+	it('should allow owner to disable whitelisting' , async () => {
 		await tokenInstance.toggleWhitelisting(false);
 		var isWhitelistingEnabled = await tokenInstance.getWhitelistingStatus();
 		assert.isTrue(isWhitelistingEnabled == false);
 	});
 
-	it('should allow to enable whitelisting' , async () => {
+	it('should allow owner to enable whitelisting' , async () => {
 		await tokenInstance.toggleWhitelisting(true);
 		var isWhitelistingEnabled = await tokenInstance.getWhitelistingStatus();
 		assert.isTrue(isWhitelistingEnabled == true);
+	});
+
+	it('should not allow other account to enable whitelisting' , async () => {
+
+		await tokenInstance.toggleWhitelisting(false);
+
+		assert_throw(tokenInstance.toggleWhitelisting(true, {from: accounts[1]}));
+
+		var isWhitelistingEnabled = await tokenInstance.getWhitelistingStatus();
+		assert.isTrue(isWhitelistingEnabled == false);
+	});
+
+	it('should not allow other account to disable whitelisting' , async () => {
+		await tokenInstance.toggleWhitelisting(true);
+
+		assert_throw(tokenInstance.toggleWhitelisting(false, {from: accounts[1]}));
+
+		var isWhitelistingEnabled = await tokenInstance.getWhitelistingStatus();
+		assert.isTrue(isWhitelistingEnabled == true);
+	});
+	
+	it('should allow owner to whitelist an account', async () => {
+		var account2 = accounts[1];
+		
+		var isWhitelistingEnabled = await tokenInstance.getWhitelistingStatus();
+		assert.isTrue(isWhitelistingEnabled == true);
+
+		var statusBeforeAccount = await tokenInstance.whitelist(account2);
+		assert.isTrue(statusBeforeAccount == false);
+
+		await tokenInstance.addAddressToWhitelist(account2)
+
+		var statusAfterAccount = await tokenInstance.whitelist(account2);
+		assert.isTrue(statusAfterAccount == true);
+	});
+
+	it('should allow owner to remove an account from whitelist', async () => {
+		var account2 = accounts[1];
+		
+		var isWhitelistingEnabled = await tokenInstance.getWhitelistingStatus();
+		assert.isTrue(isWhitelistingEnabled == true);
+
+		var statusBeforeAccount = await tokenInstance.whitelist(account2);
+		assert.isTrue(statusBeforeAccount == false);
+
+		await tokenInstance.addAddressToWhitelist(account2)
+
+		var statusAfterAccount = await tokenInstance.whitelist(account2);
+		assert.isTrue(statusAfterAccount == true);
+
+		await tokenInstance.removeAddressFromWhitelist(account2)
+
+		var statusAfterAccount = await tokenInstance.whitelist(account2);
+		assert.isTrue(statusAfterAccount == false);
+	});
+
+	it('should not allow other account to whitelist an account', async () => {
+		var account2 = accounts[1];
+		var account3 = accounts[2];
+
+		var isWhitelistingEnabled = await tokenInstance.getWhitelistingStatus();
+		assert.isTrue(isWhitelistingEnabled == true);
+
+		var statusBeforeAccount = await tokenInstance.whitelist(account3);
+		assert.isTrue(statusBeforeAccount == false);
+
+		assert_throw(tokenInstance.addAddressToWhitelist(account3, {from: account2}));
+
+		var statusAfterAccount = await tokenInstance.whitelist(account3);
+		assert.isTrue(statusAfterAccount == false);
+	});
+
+	it('should not allow other account to remove an account from whitelist', async () => {
+		var account2 = accounts[1];
+		var account3 = accounts[2];
+
+		var isWhitelistingEnabled = await tokenInstance.getWhitelistingStatus();
+		assert.isTrue(isWhitelistingEnabled == true);
+
+		var statusBeforeAccount = await tokenInstance.whitelist(account3);
+		assert.isTrue(statusBeforeAccount == false);
+
+		await tokenInstance.addAddressToWhitelist(account3)
+
+		var statusAfterAccount = await tokenInstance.whitelist(account3);
+		assert.isTrue(statusAfterAccount == true);
+
+		assert_throw(tokenInstance.removeAddressFromWhitelist(account3, {from: account2}));
+
+		var statusAfterAccount = await tokenInstance.whitelist(account3);
+		assert.isTrue(statusAfterAccount == true);
 	});
 
 	it('should reject other account to transfer tokens' , async () => {
