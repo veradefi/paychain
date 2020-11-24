@@ -7,7 +7,8 @@ module.exports = {
       const invalidOpcode = error.message.search('invalid opcode') >= 0
       const outOfGas = error.message.search('out of gas') >= 0
       const revert = error.message.search('VM Exception while processing transaction: revert') >= 0
-      assert(invalidJump || invalidOpcode || outOfGas || revert, "Expected throw, got '" + error + "' instead")
+      const statusError = error.message.search('does not trigger a Solidity `revert` statement') >= 0
+      assert(invalidJump || invalidOpcode || outOfGas || revert || statusError, "Expected throw, got '" + error + "' instead")
       return
     }
     assert.fail('Expected throw not received')
