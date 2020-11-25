@@ -60,6 +60,8 @@ const envVarsSchema = Joi.object({
     PAPERTRAIL_HOST: process.env.PAPERTRAIL_HOST || Joi.string().allow('')
         .default(''),
     PAPERTRAIL_PORT: process.env.PAPERTRAIL_PORT || Joi.number(),
+    PAPERTRAIL_PROGRAM: process.env.PAPERTRAIL_PROGRAM || Joi.string().allow('')
+        .default(''),
 }).unknown()
     .required();
 
@@ -103,6 +105,7 @@ const config = {
     papertrail: {
         host: envVars.PAPERTRAIL_HOST,
         port: envVars.PAPERTRAIL_PORT,
+        program: envVars.PAPERTRAIL_PROGRAM,
     }
 };
 

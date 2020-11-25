@@ -5,6 +5,7 @@ import config from './config'
 const winstonPapertrail = new winston.transports.Papertrail({
     host: config.papertrail.host,
     port: config.papertrail.port,
+    program: config.papertrail.program,
     colorize: true,
 })
  
