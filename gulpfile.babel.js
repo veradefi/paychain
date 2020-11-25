@@ -8,7 +8,7 @@ const plugins = gulpLoadPlugins();
 const polyfill = './node_modules/gulp-babel/node_modules/babel-core/browser-polyfill.js'
 
 const paths = {
-    js: ['./**/*.js', '!dist/**', '!node_modules/**', '!coverage/**'],
+    js: ['./**/*.js', '!dist/**', '!node_modules/**', '!coverage/**', '!token/**'],
     nonJs: ['./package.json', './.gitignore', './.env', './.env.sandbox'],
     tests: './server/tests/*.js',
     public: ['./server/public/**/*.html', './server/public/**/*.css'],
