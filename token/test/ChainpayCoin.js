@@ -20,7 +20,6 @@ var owner;
 
 contract('chainpayCoin' , (accounts) => {
 	owner = accounts[0];
-
 	beforeEach(async () => {
 		tokenInstance = await chainpayCoin.new({from: owner});
 		saleInstance = await chainpayCoinSale.new(tokenInstance.address , {from: owner});
@@ -501,7 +500,7 @@ contract('chainpayCoin' , (accounts) => {
 		var listCount = await saleInstance.userCount(); 
 		assert.equal(count , listCount.toNumber() , 'Count of User List should match after Adding Users');
 
-		var account2 = accounts[9];
+		var account2 = accounts[accounts.length - 1];
 		var unit = 10E18;
 
 		await saleInstance.addUser(account2 , unit , {from: account1});
