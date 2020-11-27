@@ -33,6 +33,7 @@ module.exports = (sequelize, DataTypes) => {
         address: {
             type: DataTypes.STRING,
             allowNull: false,
+            unique: true,
         },
         privateKey: {
             type: DataTypes.STRING,
@@ -47,6 +48,23 @@ module.exports = (sequelize, DataTypes) => {
                 } else {
                     next();
                 }
+            },
+            addressExists: function(next) {
+                Account.findAll({
+                    where: {
+                        address: sequelize.where(sequelize.fn('LOWER', sequelize.col('address')), '=', this.address)
+                    }
+                })
+                .then((accounts) => {
+                    if (accounts.length > 0) {
+                        next(new Error("Account already exists"));
+                    } else {
+                        next();
+                    }
+                })
+                .catch((error) => {
+                    next(error);
+                });
             }
         },
         setterMethods: {
