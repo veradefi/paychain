@@ -8,7 +8,11 @@ const winstonPapertrail = new winston.transports.Papertrail({
     program: config.papertrail.program,
     colorize: true,
 })
- 
+
+winstonPapertrail.on('error', function(err) {
+    console.log("Could not connect to Papertrail: ", err.toString());
+});
+
 const logger = new winston.Logger({
     transports: [winstonPapertrail]
 });
