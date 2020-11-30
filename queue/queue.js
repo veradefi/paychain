@@ -58,7 +58,7 @@ const processQueue = () => {
 
         console.log("nonce: ", nonceInt, ", web3Nonce: " , web3Nonce);
 
-        const transactions   = await client.lrangeAsync(config.queue.name, 0, 199);
+        const transactions   = await client.lrangeAsync(config.queue.name, 0, 2);
         const removeCommand  = await client.ltrimAsync(config.queue.name, transactions.length, 100000);
         const nonceIncrement = 1 + nonceInt;
         const multi          = client.multi()
@@ -94,23 +94,47 @@ const processQueue = () => {
                     if (!err) {
                         multi
                             .execAsync()
-                            .then(() => processQueue())
-                            .catch((err) => processQueue());
+                            .then(() => setTimeout(() => {
+                                processQueue();
+                            }, config.batch.time))
+                            .catch((err) => setTimeout(() => {
+                                processQueue();
+                            }, config.batch.time));
                     } else {
                         logger.error(err)
                         setTimeout(() => {
                             processQueue();
-                        }, 5000);
+                        }, config.batch.time);
                     }
                 });
         } else {
           setTimeout(() => {
               processQueue();
-          }, 1000)
+          }, config.batch.time)
         }
     });
 };
 
+const processNextBatch = () => {
+    const batchHoldTime = setInterval(() => {
+        console.log("Check time");
+        let iterCount = 0;
+        const interval = setInterval(async () => {
+            console.log("Check size", iterCount);
+            iterCount++;
+            const transactions   = await client.lrangeAsync(config.queue.name, 0, config.batch.size);
+            if (transactions.length >= config.batch.size) {
+                console.log("Size found");
+                clearInterval(interval);
+                processQueue();
+            } else if(iterCount >= 5) {
+                clearInterval(interval);
+                processQueue();
+            }
+        }, Math.min(config.batch.time, 1000));
+
+    }, config.batch.time);
+};
 // const startQueue = () => {
 //     setInterval(() => {
 //         processQueue();

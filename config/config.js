@@ -62,6 +62,10 @@ const envVarsSchema = Joi.object({
     PAPERTRAIL_PORT: process.env.PAPERTRAIL_PORT || Joi.number(),
     PAPERTRAIL_PROGRAM: process.env.PAPERTRAIL_PROGRAM || Joi.string().allow('')
         .default(''),
+    TX_BATCH_SIZE: process.env.TX_BATCH_SIZE || Joi.number()
+        .default(200),
+    TX_HOLD_TIME: process.env.TX_HOLD_TIME || Joi.number()
+        .default(5000),
 }).unknown()
     .required();
 
@@ -106,7 +110,11 @@ const config = {
         host: envVars.PAPERTRAIL_HOST,
         port: envVars.PAPERTRAIL_PORT,
         program: envVars.PAPERTRAIL_PROGRAM,
-    }
+    },
+    batch: {
+        size: envVars.TX_BATCH_SIZE,
+        time: envVars.TX_HOLD_TIME,
+    },
 };
 
 console.log(config)
