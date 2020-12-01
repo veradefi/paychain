@@ -19,6 +19,8 @@
     "cron:build": "yarn build && node ./dist/cronjob/index.js",
     "initialize": "node ./dist/scripts/init.js",
     "initialize:build": "yarn build && node ./dist/scripts/init.js",
+    "check": "node ./dist/scripts/check.js",
+    "check:build": "yarn build && node ./dist/scripts/check.js",
     "crypto": "node ./dist/scripts/encrypt.js",
     "crypto:build": "yarn build && node ./dist/scripts/encrypt.js",
     "start:debug": "cross-env DEBUG=amida-api-boilerplate:* yarn start",
