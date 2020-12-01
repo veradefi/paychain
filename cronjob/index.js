@@ -1,5 +1,5 @@
 import cronjob from './cronjob'
-import logger from '../config/papertrail'
+import logger from '../config/winston'
 
 process
   .on('unhandledRejection', (reason, p) => {

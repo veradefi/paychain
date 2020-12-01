@@ -1,6 +1,7 @@
 import httpStatus from 'http-status';
 import db from '../../config/sequelize';
 import { createAccount as web3CreateAccount } from '../lib/web3';
+import APIError from '../helpers/APIError'
 
 const Account = db.Account;
 
@@ -11,7 +12,7 @@ function load(req, res, next, id) {
     Account.findById(id)
         .then((account) => {
             if (!account) {
-                const e = new Error('Account does not exist');
+                const e = new APIError('Account does not exist');
                 e.status = httpStatus.NOT_FOUND;
                 return next(e);
             }

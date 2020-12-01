@@ -1,7 +1,7 @@
 import redis from 'redis';
 import bluebird from 'bluebird';
 import config from '../config/config'
-import logger from '../config/papertrail'  
+import logger from '../config/winston'  
 
 let client;
 if (!client) {

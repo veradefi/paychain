@@ -1,5 +1,5 @@
 import { initQueue } from './queue'
-import logger from '../config/papertrail'
+import logger from '../config/winston'
 
 process
   .on('unhandledRejection', (reason, p) => {

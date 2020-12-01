@@ -1,7 +1,8 @@
 import { encrypt } from '../helpers/crypto';
 import { getBalance } from '../lib/web3';
 import config from '../../config/config'
-import logger from '../../config/papertrail'
+import logger from '../../config/winston'
+import APIError from '../helpers/APIError'
 
 const uuidv1 = require('uuid/v1');
 
@@ -44,7 +45,7 @@ module.exports = (sequelize, DataTypes) => {
         validate: {
             noNegativeBalance: function (next) {
                 if (this.balance < 0) {
-                    next(new Error("Balance cannot be negative"));
+                    next(new APIError("Balance cannot be negative"));
                 } else {
                     next();
                 }
@@ -57,7 +58,7 @@ module.exports = (sequelize, DataTypes) => {
                 })
                 .then((accounts) => {
                     if (accounts.length > 0) {
-                        next(new Error("Account already exists"));
+                        next(new APIError("Account already exists", 403, true));
                     } else {
                         next();
                     }
@@ -81,8 +82,6 @@ module.exports = (sequelize, DataTypes) => {
                             resolve(account)
                         })
                         .catch((err) => {
-                            console.log(err)
-                            logger.warn(err)
                             resolve(account);
                         });
                 });

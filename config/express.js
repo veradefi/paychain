@@ -15,6 +15,7 @@ import routes from '../server/routes/index.route';
 import testRoutes from '../server/routes/test.route';
 import config from './config';
 import APIError from '../server/helpers/APIError';
+import Sequelize from 'sequelize';
 
 const app = express();
 
@@ -65,10 +66,15 @@ app.use((err, req, res, next) => {
         const unifiedErrorMessage = err.errors.map(error => error.messages.join('. ')).join(' and ');
         const error = new APIError(unifiedErrorMessage, err.status, true);
         return next(error);
-    } else if (!(err instanceof APIError)) {
+    } else if(err instanceof Sequelize.ValidationError){
+        const apiError = new APIError(err.message, 400, err.isPublic);
+        return next(apiError);
+    } 
+    else if (!(err instanceof APIError)) {
         const apiError = new APIError(err.message, err.status, err.isPublic);
         return next(apiError);
     }
+
     return next(err);
 });
 
@@ -83,13 +89,23 @@ if (config.env !== 'test') {
     app.use(expressWinston.errorLogger({
         winstonInstance,
         msg: 'HTTP {{req.method}} {{req.url}} {{res.statusCode}} {{res.responseTime}}ms',
+        meta: true,
+        colorStatus: true,
+        level: function(req, res, err) {
+            if (err.status >= 500 || !err.status) {
+                return 'error'
+            }
+            return 'warn'
+        },
+        metaField: 'stack',
+        blacklistedMetaFields: ['message', 'error', 'process', 'trace', 'os', 'req', 'level', '[Symbol(message)]']
     }));
 }
 
 // error handler, send stacktrace only during development
 app.use((err, req, res, next) => {// eslint-disable-line no-unused-vars
     let respMessage = {
-        "statusCode": err.status,
+        "statusCode": err.status || 500,
         "error": httpStatus[err.status],
         "message": err.isPublic ? err.message : (err.message || httpStatus[err.status])
     }
@@ -98,7 +114,7 @@ app.use((err, req, res, next) => {// eslint-disable-line no-unused-vars
         respMessage.stack = err.stack;
     }
 
-    res.status(err.status).json(respMessage);
+    res.status(respMessage.statusCode).json(respMessage);
 });
 
 export default app;

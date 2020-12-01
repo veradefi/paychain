@@ -5,7 +5,7 @@ import TransactionManager from './TransactionManager';
 import { shouldRetry } from '../server/helpers/helpers';
 import db from '../config/sequelize'
 import { getTransactionCount, signTransaction, web3 } from '../server/lib/web3';
-import logger from '../config/papertrail'
+import logger from '../config/winston'
 import "babel-polyfill";
 
 const transactionManager = new TransactionManager();

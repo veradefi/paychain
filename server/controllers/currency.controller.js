@@ -1,5 +1,6 @@
 import httpStatus from 'http-status';
 import db from '../../config/sequelize';
+import APIError from '../helpers/APIError'
 
 const Currency = db.Currency;
 
@@ -10,7 +11,7 @@ function load(req, res, next, id) {
     Currency.findById(id)
         .then((currency) => {
             if (!currency) {
-                const e = new Error('Currency does not exist');
+                const e = new APIError('Currency does not exist');
                 e.status = httpStatus.NOT_FOUND;
                 return next(e);
             }

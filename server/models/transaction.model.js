@@ -2,9 +2,11 @@
 import client from '../../queue/client'
 import config from '../../config/config'
 import async from 'async';
-import logger from '../../config/papertrail'
+import logger from '../../config/winston'
 import BN from 'bn.js'
 const uuidv1 = require('uuid/v1');
+import APIError from '../helpers/APIError'
+
 /**
  * Transaction Schema
  */
@@ -75,7 +77,7 @@ module.exports = (sequelize, DataTypes) => {
                 })
                 .then((fromAcc) => {
                     if (!fromAcc) {
-                        next(new Error("From account does not exist"));
+                        next(new APIError("From account does not exist"));
                     } else {
                         next();
                     }
@@ -90,7 +92,7 @@ module.exports = (sequelize, DataTypes) => {
                 })
                 .then((fromAcc) => {
                     if (!fromAcc) {
-                        next(new Error("To account does not exist"));
+                        next(new APIError("To account does not exist"));
                     } else {
                         next();
                     }
@@ -105,7 +107,7 @@ module.exports = (sequelize, DataTypes) => {
                 })
                 .then(currency => {
                     if (!currency) {
-                        next(new Error("Currency does not exist"));
+                        next(new APIError("Currency does not exist"));
                     } else {
                         next();
                     }
@@ -122,7 +124,7 @@ module.exports = (sequelize, DataTypes) => {
                     let fromBalance = new BN(fromAcc.balance);
                     let amount = new BN(this.amount);
                     if (!fromAcc || fromBalance.cmp(amount) == -1) {
-                        next(new Error("Insufficient balance"));
+                        next(new APIError("Insufficient balance"));
                     } else {
                         next();
                     }

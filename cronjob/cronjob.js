@@ -4,7 +4,7 @@ import config from '../config/config'
 
 import { getReceipt } from '../server/lib/web3';
 import { add as addToQueue } from '../queue/queue';
-import logger from '../config/papertrail'
+import logger from '../config/winston'
 
 const Transaction = db.Transaction;
 

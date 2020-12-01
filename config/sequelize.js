@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import _ from 'lodash';
 import config from './config';
-import logger from '../config/papertrail'  
+import logger from '../config/winston'  
 
 const db = {};
 

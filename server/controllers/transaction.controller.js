@@ -1,6 +1,7 @@
 import httpStatus from 'http-status';
 import db from '../../config/sequelize';
 import moment from 'moment';
+import APIError from '../helpers/APIError'
 
 const Transaction = db.Transaction;
 
@@ -11,7 +12,7 @@ function load(req, res, next, id) {
     Transaction.findById(id)
         .then((transaction) => {
             if (!transaction) {
-                const e = new Error('Transaction does not exist');
+                const e = new APIError('Transaction does not exist');
                 e.status = httpStatus.NOT_FOUND;
                 return next(e);
             }
