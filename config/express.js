@@ -97,8 +97,13 @@ if (config.env !== 'test') {
             }
             return 'warn'
         },
-        metaField: 'stack',
-        blacklistedMetaFields: ['message', 'error', 'process', 'trace', 'os', 'req', 'level', '[Symbol(message)]']
+        metaField: 'errorLog',
+        dynamicMeta: function(req, res, err) { 
+            return {
+                req: "",
+            }
+        } ,
+        blacklistedMetaFields: ['message', 'error', 'process', 'trace', 'os', 'errors', 'req', 'level', '[Symbol(message)]']
     }));
 }
 

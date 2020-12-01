@@ -53,12 +53,15 @@ module.exports = (sequelize, DataTypes) => {
             addressExists: function(next) {
                 Account.findAll({
                     where: {
-                        address: sequelize.where(sequelize.fn('LOWER', sequelize.col('address')), '=', this.address)
+                        address: sequelize.where(sequelize.fn('LOWER', sequelize.col('address')), '=', this.address),
+                        id: {
+                            $ne: this.id
+                        }
                     }
                 })
                 .then((accounts) => {
                     if (accounts.length > 0) {
-                        next(new APIError("Account already exists", 403, true));
+                        next(new APIError("Account already exists"));
                     } else {
                         next();
                     }
