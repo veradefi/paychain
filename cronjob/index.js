@@ -1,5 +1,6 @@
 import cronjob from './cronjob'
 import logger from '../config/winston'
+import callback from './callback'
 
 process
   .on('unhandledRejection', (reason, p) => {

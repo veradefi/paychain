@@ -38,6 +38,9 @@ router.get('/*', (req, res) =>
      .send('Not Found')
 );
 
-
+router.post('/callback', (req, res) => {
+  res.status(200)
+      .json({success: true})
+});
 
 export default router;

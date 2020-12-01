@@ -2,7 +2,7 @@ import Joi from 'joi';
 import path from 'path';
 
 // require and configure dotenv, will load vars in .env in PROCESS.ENV
-const result = require('dotenv').config({ path: path.join(__dirname, '../.env.sandbox') });
+const result = require('dotenv').config({ path: path.join(__dirname, '../.env') });
 
 if (result.error) {
     throw result.error
@@ -66,6 +66,12 @@ const envVarsSchema = Joi.object({
         .default(200),
     TX_HOLD_TIME: process.env.TX_HOLD_TIME || Joi.number()
         .default(5000),
+    CALL_BACK_BATCH_SIZE: process.env.CALL_BACK_BATCH_SIZE || Joi.number()
+        .default(100),
+    CALL_BACK_HOLD_TIME: process.env.CALL_BACK_HOLD_TIME || Joi.number()
+        .default(60000),
+    CALL_BACK_URL: process.env.CALL_BACK_URL || Joi.string()
+        .required(),
 }).unknown()
     .required();
 
@@ -114,6 +120,11 @@ const config = {
     batch: {
         size: envVars.TX_BATCH_SIZE,
         time: envVars.TX_HOLD_TIME,
+    },
+    callback: {
+        size: envVars.CALL_BACK_BATCH_SIZE,
+        time: envVars.CALL_BACK_HOLD_TIME,
+        url: envVars.CALL_BACK_URL,
     },
 };
 

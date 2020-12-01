@@ -60,6 +60,7 @@
     "mysql": "2.15.0",
     "mysql2": "^1.5.3",
     "node-cron": "^1.2.1",
+    "request": "^2.88.0",
     "run-sequence": "^1.1.5",
     "sequelize": "^4.37.10",
     "socket.io": "^2.1.1",
