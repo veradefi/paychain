@@ -46,9 +46,9 @@ sequelize
     .catch((err) => {
         console.log('An error occured %j', err);
         logger.error(err)
-        setTimeout(() => {
-            process.exit(1)
-        }, 5000)
+        // setTimeout(() => {
+        //     process.exit(1)
+        // }, 5000)
     });
 
 // assign the sequelize variables to the db object and returning the db.

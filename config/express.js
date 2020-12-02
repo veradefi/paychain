@@ -15,9 +15,11 @@ import routes from '../server/routes/index.route';
 import testRoutes from '../server/routes/test.route';
 import config from './config';
 import APIError from '../server/helpers/APIError';
+import db from './sequelize';
 import Sequelize from 'sequelize';
 
 const app = express();
+const DATABASE_ERROR = "Database is not connected. Please check your database and retry";
 
 if (config.env === 'development') {
     app.use(logger('dev'));
@@ -36,6 +38,16 @@ app.use(helmet());
 
 // enable CORS - Cross Origin Resource Sharing
 app.use(cors());
+
+app.use((req, res, next) => {
+    db
+        .sequelize
+        .authenticate()
+        .then(() => next())
+        .catch((e) => {
+            next(new Error(DATABASE_ERROR))
+        });
+});
 
 app.use("/tests", express.static(path.join(__dirname, '../server/public')));
 
