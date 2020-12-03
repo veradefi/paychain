@@ -76,21 +76,76 @@ function sendTransactionRequests(size = 100) {
     });
 };
 
-function waitForTransactionConfirmation(transaction, length) { 
-    return new Promise((fulfill, reject) => {
-        setTimeout(() => {
+// function waitForTransactionConfirmation(transaction, retries) { 
+//     return new Promise((fulfill, reject) => {
+//         if (retries >= 50) {
+//             reject(new Error("Max tried reached"));
+//             return;
+//         }
+//         setTimeout(() => {
+//             request(config.api_url)
+//                 .get(`/api/transactions/${transaction.id}`)
+//                 .expect(httpStatus.OK)
+//                 .then((res) => {
+//                     expect(res.body.to).to.equal(transaction.to);
+//                     expect(res.body.from).to.equal(transaction.from);
+//                     console.log(retries, res.body.status)
+//                     if (res.body.status == "initiated") {
+//                         waitForTransactionConfirmation(transaction, ++retries);
+//                     } else if (res.body.status == "failed") {
+//                         reject(new Error("Transaction failed: " + transaction.id));
+//                     } else {
+//                         expect(res.body.status).to.be.oneOf(['pending', 'completed']);
+//                         fulfill();
+//                     }
+//                 })
+//                 .catch(reject);
+//         }, 3000);
+//     });
+// };
+
+function waitForTransactionConfirmation(transactions, done) { 
+    let tries = 0;
+    let interval = setInterval(() => {
+        tries++;
+        const checkStatus = (transaction, cb) => {
             request(config.api_url)
                 .get(`/api/transactions/${transaction.id}`)
                 .expect(httpStatus.OK)
                 .then((res) => {
                     expect(res.body.to).to.equal(transaction.to);
                     expect(res.body.from).to.equal(transaction.from);
-                    expect(res.body.status).to.be.oneOf(['pending', 'completed']);
-                    fulfill();
+
+                    if (res.body.status == "failed") {
+                        return cb(new Error("Transaction failed: " + transaction.id));
+                    } else if (res.body.status == "pending" || res.body.status == "completed") {
+                        return cb();
+                    }
                 })
-                .catch(reject);
-        }, 30000);
-    });
+                .catch(cb);
+        }
+
+        for (let i = 0; i < all_transactions.length; i++) {
+            const index = i;
+            checkStatus(all_transactions[index], (err) => {
+                if (err) {
+                    clearInterval(interval);
+                    return done(err)
+                }
+                all_transactions.splice(index, 1);
+                if(all_transactions.length == 0) {
+                    clearInterval(interval);
+                    return done();
+                }
+            })
+        }
+
+        if (tries >= 10) {
+            clearInterval(interval);
+            return done(new Error("Max tries reached for transactions confirmation"))
+        }
+
+    }, 30000);
 };
 
 describe('## Transaction APIs', () => {
@@ -103,16 +158,7 @@ describe('## Transaction APIs', () => {
         sendTransactionRequests(config.test.tx_per_sex);
 
         it('should wait for transaction confirmation', (done) => {
-            const promises = [];
-            for (let i = 0; i < all_transactions.length; i++) {
-                const promise = waitForTransactionConfirmation(all_transactions[i], all_transactions.length);
-                promises.push(promise);
-            }
-
-            Promise.all(promises).then(() => {
-                done();
-            })
-            .catch(done);
+            waitForTransactionConfirmation(all_transactions, done);
         });
     });
 });

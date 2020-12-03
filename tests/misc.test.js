@@ -3,14 +3,14 @@
 import request from 'supertest-as-promised';
 import httpStatus from 'http-status';
 import chai, { expect } from 'chai';
-import app from '../index';
+import config from '../config/config';
 
 chai.config.includeStack = true;
 
 describe('## Misc', () => {
     describe('# GET /api/health-check', () => {
         it('should return OK', (done) => {
-            request(app)
+            request(config.api_url)
                 .get('/api/health-check')
                 .expect(httpStatus.OK)
                 .then((res) => {

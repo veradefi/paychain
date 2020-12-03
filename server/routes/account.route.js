@@ -15,7 +15,10 @@ router.route('/')
 router.route('/:accountId')
 
     /** GET /api/accounts/:accountId - Get account */
-    .get(accountCtrl.get);
+    .get(accountCtrl.get)
+
+    /** DELETE /api/accounts/:accountId - Delete account */
+    .delete(accountCtrl.remove);
 
 /** Load account when API with accountId route parameter is hit */
 router.param('accountId', accountCtrl.load);

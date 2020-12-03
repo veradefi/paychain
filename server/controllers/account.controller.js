@@ -58,5 +58,19 @@ function create(req, res, next) {
         .catch(e => next(e));
 }
 
+/**
+ * Delete account
+ * @returns {Account}
+ */
+function remove(req, res, next) {
+    Account.destroy({
+        where: {
+            id: req.account.id
+        }
+    })
+    .then(savedAccount => res.status(204).json(savedAccount))
+    .catch(e => next(e));
+}
 
-export default { load, get, create, search };
+
+export default { load, get, create, search, remove };

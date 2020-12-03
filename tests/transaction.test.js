@@ -4,7 +4,6 @@ import request from 'supertest-as-promised';
 import httpStatus from 'http-status';
 import chai, { expect } from 'chai';
 import config from '../config/config';
-import app from '../index';
 
 chai.config.includeStack = true;
 let apiAccounts = []
@@ -52,7 +51,7 @@ describe('## Transaction APIs', () => {
                 from: getRandomAccountId(),
             };
 
-            request(app)
+            request(config.api_url)
                 .post('/api/transactions')
                 .send(transaction)
                 .expect(httpStatus.CREATED)
@@ -69,7 +68,7 @@ describe('## Transaction APIs', () => {
 
     describe('# GET /api/transactions/:transactionId', () => {
         it('should get transaction details', (done) => {
-            request(app)
+            request(config.api_url)
                 .get(`/api/transactions/${transaction.id}`)
                 .expect(httpStatus.OK)
                 .then((res) => {
@@ -82,7 +81,7 @@ describe('## Transaction APIs', () => {
         });
 
         it('should report error with message - Not found, when transaction does not exist', (done) => {
-            request(app)
+            request(config.api_url)
                 .get('/api/transactions/12345')
                 .expect(httpStatus.NOT_FOUND)
                 .then((res) => {
