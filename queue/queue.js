@@ -58,7 +58,7 @@ const processQueue = () => {
 
         console.log("nonce: ", nonceInt, ", web3Nonce: " , web3Nonce);
 
-        const transactions   = await client.lrangeAsync(config.queue.name, 0, 2);
+        const transactions   = await client.lrangeAsync(config.queue.name, 0, config.batch.size);
         const removeCommand  = await client.ltrimAsync(config.queue.name, transactions.length, 100000);
         const nonceIncrement = 1 + nonceInt;
         const multi          = client.multi()
@@ -157,7 +157,11 @@ const initQueue = () => {
             const results  = await multi.execAsync();
             if (results !== null) {
                 // Start first batch of the queue immediately
-                processQueue();
+                console.log("start time", config.batch.time)
+                setTimeout(() => {
+                    console.log("asas")
+                    processQueue();
+                }, config.batch.time)
             }    
         } catch(e) {
             logger.error(e)

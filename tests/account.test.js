@@ -12,18 +12,17 @@ let account = {
     privateKey: '0x26020dde5a28225faed8d6a6cbfb929e29473513ac0a91dfa02f598be81e02ff',
 };
 
-after((done) => {
-    request(config.api_url)
-                .delete('/api/accounts/' + account.id)
-                .expect(httpStatus.NO_CONTENT)
-                .then((res) => {
-                    done();
-                })
-                .catch(done);
-});
-
 describe('## Account APIs', () => {
-
+    after((done) => {
+        request(config.api_url)
+                    .delete('/api/accounts/' + account.id)
+                    .expect(httpStatus.NO_CONTENT)
+                    .then((res) => {
+                        done();
+                    })
+                    .catch(done);
+    });
+    
     describe('# POST /api/accounts', () => {
         it('should create a new account', (done) => {
             request(config.api_url)
