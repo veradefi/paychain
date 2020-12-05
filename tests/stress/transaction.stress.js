@@ -108,6 +108,7 @@ function waitForTransactionConfirmation(transactions, done) {
     let tries = 0;
     let interval = setInterval(() => {
         tries++;
+        console.log("Transaction confirmation #", tries, ", remaining transactions: ", all_transactions.length)
         const checkStatus = (transaction, cb) => {
             request(config.api_url)
                 .get(`/api/transactions/${transaction.id}`)
