@@ -14,7 +14,7 @@ const checkDB = () => {
             config.postgres.passwd,
             {
                 dialect: 'mysql',
-                port: 3378,
+                port: config.postgres.port,
                 host: config.postgres.host,
                 logging: false,
                 pool: {
@@ -44,13 +44,13 @@ const checkRedis = () => {
     return new Promise((resolve, reject) => {
         const client = redis.createClient({
             prefix: 'q',
-            port: 1234 || config.queue.port,
+            port: config.queue.port,
             host: config.queue.host,
             password: config.queue.password,
         });
     
         client.on("connect", () => {
-            console.log("Redis connection is working!");
+            console.log("Redis connection is working.");
             resolve();
         })
     
@@ -82,7 +82,7 @@ Promise.some([
     checkDB(),
     checkRedis(),
     checkEthereumNode()
-], 1)
+], 3)
 .then(() => {
     process.exit();
 })
