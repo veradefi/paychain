@@ -8,13 +8,13 @@ import logger from '../config/winston'
 const db = {};
 
 // connect to mysql db
-const sequelize = new Sequelize(config.postgres.db,
-                                config.postgres.user,
-                                config.postgres.passwd,
+const sequelize = new Sequelize(config.database.db,
+                                config.database.user,
+                                config.database.passwd,
     {
         dialect: 'mysql',
-        port: config.postgres.port,
-        host: config.postgres.host,
+        port: config.database.port,
+        host: config.database.host,
         logging: false,
         pool: {
             max: 5,

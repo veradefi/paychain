@@ -93,7 +93,7 @@ const config = {
         host: envVars.QUEUE_HOST,
         password: envVars.QUEUE_PWD,
     },
-    postgres: {
+    database: {
         db: envVars.MYSQL_DB,
         port: envVars.MYSQL_PORT,
         host: envVars.MYSQL_HOST,
