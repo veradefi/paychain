@@ -19,6 +19,7 @@ contract chainpayCoinSale is Ownable {
 	event AddUser( address _user, uint _amount, uint _time );
 
 	mapping (address => uint256) public userAmount;
+	mapping (address => bool) public isUserRegistered;
 
 	/**
 	* @dev Constructor that initializes token contract with token address in parameter
@@ -36,14 +37,7 @@ contract chainpayCoinSale is Ownable {
 	}
 
 	function userExists(address _user) internal constant returns (bool) {
-		for( uint i = 0 ; i < users.length ; i++ ) {
-			if(users[i] == _user)
-			{
-				return true;
-			}
-		}
-
-		return false;
+	    return isUserRegistered[_user];
 	}
 
 	function addUser( address _user, uint _amount ) onlyOwner public {
@@ -53,8 +47,9 @@ contract chainpayCoinSale is Ownable {
 		if(!userExists(_user)) {
 			users.push(_user);
 		}
-
-		AddUser( _user, _amount, now);
+        
+        isUserRegistered[_user] = true;
+		emit AddUser( _user, _amount, now);
 	}
 
 	// an optimization in case of network congestion
@@ -78,7 +73,7 @@ contract chainpayCoinSale is Ownable {
 
 		uint256 amount = 0;
 		for( uint i = 0 ; i < users.length ; i++ ) {
-			amount = amount + userAmount[users[i]];
+			amount = amount.add(userAmount[users[i]]);
 		}
 
 		// check if value of the tokens is valid
