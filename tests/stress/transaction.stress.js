@@ -31,12 +31,16 @@ function getApiAccounts() {
     });
 };
 
-function getRandomAccountId() {
+function getRandomAccountId(count = 0) {
     const randomNumber = getRandom(0, apiAccounts.length - 1);
     const randomAccount = apiAccounts[randomNumber];
-
-    if (randomAccount) {
+    
+    if (randomAccount && randomAccount.balance > 100) {
         return randomAccount.id;
+    }
+
+    if (count < 5) {
+        return getRandomAccountId(++count);
     }
 }
 

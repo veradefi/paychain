@@ -8,12 +8,11 @@ import logger from '../config/winston'
 
 const Transaction = db.Transaction;
 
-const updateStatus = (transaction, status, statusDescription) => {
+const updateStatus = (transaction, status) => {
     return new Promise((resolve, reject) => {
         Transaction
             .update({
                 status,
-                statusDescription,
             }, { 
               where: { 
                 transactionHash: transaction.transactionHash 
@@ -49,7 +48,7 @@ const fetchQueueTransactions = () => {
         where: {
             status: 'initiated',
             updatedAt: {
-                $lt: db.sequelize.fn('DATE_SUB', db.sequelize.fn('NOW'), db.sequelize.literal('INTERVAL 5 MINUTE'))
+                $lt: db.sequelize.fn('DATE_SUB', db.sequelize.fn('NOW'), db.sequelize.literal('INTERVAL 1 HOUR'))
             }
         },
         include: [
@@ -57,6 +56,7 @@ const fetchQueueTransactions = () => {
             { model: db.sequelize.models.Account, as: 'toAcc'},
             { model: db.sequelize.models.Currency, as: 'currency'},
         ],
+        limit: 100,
     });
 };
 
@@ -66,7 +66,7 @@ const fetchStuckTransactions = () => {
         where: {
             status: 'pending',
             processedAt: {
-                $lt: db.sequelize.fn('DATE_SUB', db.sequelize.fn('NOW'), db.sequelize.literal('INTERVAL 5 MINUTE'))
+                $lt: db.sequelize.fn('DATE_SUB', db.sequelize.fn('NOW'), db.sequelize.literal('INTERVAL 1 HOUR'))
             }
         },
         include: [
@@ -74,6 +74,7 @@ const fetchStuckTransactions = () => {
             { model: db.sequelize.models.Account, as: 'toAcc'},
             { model: db.sequelize.models.Currency, as: 'currency'},
         ],
+        limit: 100,
     });
 };
 
@@ -87,6 +88,7 @@ const fetchPendingTransactions = () => {
         },
         group: ['transactionHash'],
         attributes: ['transactionHash'],
+        limit: 100,
     });
 }
 
