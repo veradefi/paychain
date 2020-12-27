@@ -27,7 +27,10 @@ const setStatus = (transaction, status, params) => {
                 if (newTransaction) {
                     params = params || {};
                     params.status = status;
-                    return newTransaction.updateAttributes(params)
+                    return newTransaction.updateAttributes(params, {
+                        hooks: false,
+                        validate: false,
+                    })
                     .then(() => {
                         resolve(newTransaction);
                     })
