@@ -1,5 +1,5 @@
 import { encrypt } from '../helpers/crypto';
-import { getBalance } from '../lib/web3';
+import { getBalance, approve } from '../lib/web3';
 import config from '../../config/config'
 import logger from '../../config/winston'
 import APIError from '../helpers/APIError'
@@ -79,16 +79,25 @@ module.exports = (sequelize, DataTypes) => {
         hooks: {
             beforeCreate: function(account, options) {
                 return new Promise((resolve, reject) => {
-                    getBalance(config.web3.payment_address, account.address)
-                        .then((balance) => {
-                            account.balance = balance;
-                            resolve(account)
+                    const balance = new Promise((resolve, reject) => {
+                        getBalance(config.web3.payment_address, account.address)
+                            .then((balance) => {
+                                account.balance = balance;
+                                resolve(account)
+                            })
+                            .catch((err) => {
+                                console.log(err)
+                                reject(account);
+                            });
                         })
-                        .catch((err) => {
-                            resolve(account);
-                        });
+                                
+                    // const approval = approve(account.address, account.privateKey, "10000000000000000000000000000")
+                    Promise.all([balance]).then(() => {
+                        console.log("Account created:", account.address)
+                        resolve()
+                    }).catch(reject)
                 });
-            }
+            },
         }
     });
 

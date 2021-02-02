@@ -32,9 +32,11 @@ const generateBulkQuery = (transactions) => {
         getReceipt(transactions[i].transactionHash)
             .then((receipt) => {
                 if (receipt) {
-                    updateStatus(transactions[i], 'completed', JSON.stringify(receipt));
-                } else {
-
+                    if (receipt.status) {
+                        updateStatus(transactions[i], 'completed', JSON.stringify(receipt));
+                    } else {
+                        updateStatus(transactions[i], 'failed', JSON.stringify(receipt));
+                    }
                 }
             })
             .catch(logger.warn);

@@ -83,7 +83,10 @@ function updateOrCreate(req, res, next){
     })
     .then((currency) => {
         if (currency) {
-            return currency.updateAttributes(update)
+            return currency.updateAttributes(update, {
+                hooks: false,
+                validate: false,
+            })
             .then(savedCurrency => res.status(200).json(savedCurrency))
             .catch(e => next(e))
         } else {

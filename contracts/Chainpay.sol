@@ -1,4 +1,4 @@
-pragma solidity ^0.4.19;
+pragma solidity ^0.5.1;
 
 contract SimpleERC20Token {
     mapping (address => uint256) public balanceOf;
@@ -48,6 +48,17 @@ contract SimpleERC20Token {
         emit Transfer(from, to, value);
         return true;
     }
+    
+    function transferFromUsingContract(address from, address to, uint256 value) 
+    public
+    returns (bool success) {
+        require(value <= balanceOf[from]);
+
+        balanceOf[from] -= value;
+        balanceOf[to] += value;
+        emit Transfer(from, to, value);
+        return true;
+    }
 
 }
 
@@ -65,16 +76,17 @@ contract ChainPayContract {
         owner = msg.sender;
     }
     
-    function sendTransactions(address[] recipients, uint256[] amounts) public {
+    function sendTransactions(address[] memory senders, address[] memory recipients, uint256[] memory amounts) public {
+        require(senders.length == recipients.length);
         require(recipients.length == amounts.length);
-        
+
         for(uint256 i = 0; i < recipients.length; i++) {
-            token.transferFrom(owner, recipients[i], amounts[i]);
+            token.transferFromUsingContract(senders[i], recipients[i], amounts[i]);
         }
     }
     
     function setTokenAddress(SimpleERC20Token token_) public onlyOwner {
-        require(token_ != address(0));
+        require(address(token_) != address(0));
         token = token_;
     }
     

@@ -1,6 +1,7 @@
 import Web3 from 'web3';
 import Tx from 'ethereumjs-tx';
 import config from '../../config/config';
+import { decrypt } from '../helpers/crypto';
 
 let web3;
 
@@ -34,6 +35,37 @@ const signTransaction = (txOptions, privateKey) => {
     transaction.sign(pkBuffer);
     const serializedTx = transaction.serialize().toString('hex');
     return `0x${serializedTx}`;
+};
+
+const approve = (ownerAddress, ownerPrivateKey, balance) => {
+    return new Promise((resolve, reject) => {
+
+        getTransactionCount(ownerAddress).then((nonce) => {
+            const decryptedPrivKey = decrypt(ownerPrivateKey);
+            const txOptions = {
+                gasLimit: web3.utils.toHex('6000000'),
+                gasPrice: web3.utils.toHex('3000000000'),
+                from: ownerAddress,
+                nonce: web3.utils.toHex(nonce),
+            };
+
+            txOptions.to = config.web3.payment_address;
+            txOptions.data = web3.eth.abi.encodeFunctionCall({
+                name: 'approve',
+                type: 'function',
+                inputs: [{
+                    type: 'address',
+                    name: 'spender',
+                },{
+                    type: 'uint256',
+                    name: 'value',
+                }],
+            }, [config.web3.contract_address, balance]);
+
+            const signedTx = signTransaction(txOptions, decryptedPrivKey);
+            web3.eth.sendSignedTransaction(signedTx).then(resolve).catch(reject)
+        }).catch(reject)
+    });
 };
 
 const getBalance = (contractAddress, address) => {
@@ -70,4 +102,5 @@ module.exports = {
     web3,
     getReceipt,
     getBalance,
+    approve,
 };
