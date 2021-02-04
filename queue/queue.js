@@ -43,7 +43,6 @@ const setStatus = (transaction, status, params) => {
 };
 
 const filterProcessedTransactions = (transactions) => {
-    console.log(transactions)
     return new Promise((resolve, reject) => {
         resolve(transactions)
     })
