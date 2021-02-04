@@ -65,7 +65,7 @@ class TransactionManager {
                 const decryptedPrivKey = decrypt(params.privateKey);
                 const signedTx = signTransaction(slottransaction, decryptedPrivKey);
                 batch.add(web3.eth.sendSignedTransaction.request(signedTx, 'receipt', (err, transactionHash) => {
-                    if (err) {
+                    if (err || !transactionHash) {
                         console.log("An error occurred" + err.toString());
                         transactionsChunk.map(transaction => {
                             return errorCallback(transaction, err, _nonce);
