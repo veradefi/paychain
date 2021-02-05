@@ -51,6 +51,3 @@ node_modules
 .env
 
 build/
-
-package-lock.json
-yarn.lock

@@ -1,4 +1,4 @@
-pragma solidity ^0.5.1;
+pragma solidity ^0.5.0;
 
 contract SimpleERC20Token {
     mapping (address => uint256) public balanceOf;
