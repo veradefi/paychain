@@ -40,17 +40,18 @@ const updateCallbackStatus = (transactionIds) => {
 const interval = setInterval(() => {
     getTransactions()
         .then((transactions) => {
-            request({
-                url: config.callback.url,
-                method: "POST",
-                json: transactions,
-            }, (error, response, body) => {
-                if(!error) {
-                    const transactionIds = transactions.map((transaction => transaction.id))
-                    updateCallbackStatus(transactionIds)
-                        .then(() => logger.info)
-                        .catch(() => logger.warn)
-                }
-            });
+	    if(transactions.length > 0 )
+		request({
+		    url: config.callback.url,
+		    method: "POST",
+		    json: transactions,
+		}, (error, response, body) => {
+		    if(!error) {
+			const transactionIds = transactions.map((transaction => transaction.id))
+			updateCallbackStatus(transactionIds)
+			    .then(() => logger.info)
+			    .catch(() => logger.warn)
+		    }
+		});
         })
 }, config.callback.time);
