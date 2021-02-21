@@ -31,16 +31,16 @@ function getApiAccounts() {
     });
 };
 
-function getRandomAccountId(balanceCheck = false, count = 0) {
+function getRandomAccountId(count = 0) {
     const randomNumber = getRandom(0, apiAccounts.length - 1);
     const randomAccount = apiAccounts[randomNumber];
     
-    if (randomAccount && (randomAccount.balance > 100 || !balanceCheck)) {
+    if (randomAccount && randomAccount.balance > 100) {
         return randomAccount.id;
     }
 
     if (count < 5) {
-        return getRandomAccountId(balanceCheck, ++count);
+        return getRandomAccountId(++count);
     }
 }
 
@@ -60,7 +60,7 @@ function sendTransactionRequests(size = 100) {
 
     transactions.map((transaction) => {
         it('should create a transaction', (done) => {
-            transaction.from = getRandomAccountId(true);
+            transaction.from = getRandomAccountId();
             transaction.to = getRandomAccountId();
             request(config.api_url)
                 .post('/api/transactions')

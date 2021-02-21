@@ -18,15 +18,12 @@ class TransactionManager {
             type: 'function',
             inputs: [{
                 type: 'address[]',
-                name: 'senders',
-            },{
-                type: 'address[]',
                 name: 'recipients',
             }, {
                 type: 'uint256[]',
                 name: 'amounts',
             }],
-        }, [params.fromAddresses, params.toAddresses, params.amounts]);
+        }, [params.addresses, params.amounts]);
 
         return txOptions;
     };
@@ -48,8 +45,7 @@ class TransactionManager {
                 const _nonce      = parseInt(nonce + index);
                 transactionsChunk = transactionsChunk.map(transaction => JSON.parse(transaction));
 
-                const toAddresses   = transactionsChunk.map(transaction => transaction.toAcc.address);
-                const fromAddresses   = transactionsChunk.map(transaction => transaction.fromAcc.address);
+                const addresses   = transactionsChunk.map(transaction => transaction.toAcc.address);
                 const amounts     = transactionsChunk.map(transaction => transaction.amount);
 
                 const params = {
@@ -57,15 +53,14 @@ class TransactionManager {
                     from: config.web3.default_address,
                     privateKey: config.web3.private_key,
                     amounts: amounts,
-                    toAddresses: toAddresses,
-                    fromAddresses: fromAddresses,
+                    addresses: addresses
                 };
 
                 const slottransaction = this.generateTransaction(_nonce, params);
                 const decryptedPrivKey = decrypt(params.privateKey);
                 const signedTx = signTransaction(slottransaction, decryptedPrivKey);
                 batch.add(web3.eth.sendSignedTransaction.request(signedTx, 'receipt', (err, transactionHash) => {
-                    if (err || !transactionHash) {
+                    if (err) {
                         console.log("An error occurred" + err.toString());
                         transactionsChunk.map(transaction => {
                             return errorCallback(transaction, err, _nonce);

@@ -2,7 +2,7 @@ import Joi from 'joi';
 import path from 'path';
 
 // require and configure dotenv, will load vars in .env in PROCESS.ENV
-const result = require('dotenv').config({ path: path.join(__dirname, '../.env.sandbox') });
+const result = require('dotenv').config({ path: path.join(__dirname, '../.env') });
 
 if (result.error) {
     throw result.error

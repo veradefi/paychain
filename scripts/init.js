@@ -4,8 +4,7 @@ import app from '../index';
 import config from '../config/config';
 import defaults from '../server/json/defaults.json';
 import { isLocalNode } from '../server/helpers/helpers';
-import Token from '../../build/contracts/SimpleERC20Token.json';
-import ChainPayContract from '../../build/contracts/ChainPayContract.json';
+import Token from '../../build/contracts/TestERC20.json';
 import { getAllAccounts, web3 } from '../server/lib/web3';
 import BN from 'bn.js';
 
@@ -138,22 +137,7 @@ const deployToken = () => {
                 return transferTokens(tokenContract);
             })
             .then(() => {
-                config.web3.payment_address = tokenContract.instance._address
                 return createDefaultCurrency(tokenContract.instance._address);
-            })
-            .then(() => {
-                const ChainpayABI = new web3.eth.Contract(ChainPayContract.abi);
-
-                return   ChainpayABI
-                        .deploy({ data: ChainPayContract.bytecode , arguments: [tokenContract.instance._address]})
-                        .send({
-                            from: tokenOwner.address,
-                            gas: 1500000,
-                            gasPrice: '3000000000',
-                        })
-            })
-            .then((contractInstance) => {
-                config.web3.contract_address = contractInstance._address
             })
             .then((defaultCurrency) => {
                 resolve(tokenContract);

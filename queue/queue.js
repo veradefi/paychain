@@ -42,12 +42,6 @@ const setStatus = (transaction, status, params) => {
     });
 };
 
-const filterProcessedTransactions = (transactions) => {
-    return new Promise((resolve, reject) => {
-        resolve(transactions)
-    })
-}
-
 const processQueue = () => {
 
     const default_address = process.env.DEFAULT_ADDRESS;
@@ -75,8 +69,7 @@ const processQueue = () => {
 
         if (transactions.length > 0) {
 
-            const filteredTransactions = await filterProcessedTransactions(transactions)
-            transactionManager.sendBatchTransactions(nonceInt, filteredTransactions, 
+            transactionManager.sendBatchTransactions(nonceInt, transactions, 
                 (transaction, transactionHash, nonce) => {
                     setStatus(transaction, 'pending', {
                         statusDescription: '',
