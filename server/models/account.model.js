@@ -1,7 +1,7 @@
 import { encrypt } from '../helpers/crypto';
 import { getBalance } from '../lib/web3';
 import config from '../../config/config'
-import logger from '../../config/winston'
+import Sequelize from 'sequelize'
 import APIError from '../helpers/APIError'
 
 const uuidv1 = require('uuid/v1');
@@ -55,7 +55,7 @@ module.exports = (sequelize, DataTypes) => {
                     where: {
                         address: sequelize.where(sequelize.fn('LOWER', sequelize.col('address')), '=', this.address),
                         id: {
-                            $ne: this.id
+                            [Sequelize.Op.ne]: this.id
                         }
                     }
                 })

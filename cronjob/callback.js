@@ -2,6 +2,7 @@ import request from 'request';
 import config from '../config/config'
 import db from '../config/sequelize';
 import logger from '../config/winston'
+import Sequelize from "sequelize"
 
 const Transaction = db.Transaction;
 
@@ -10,8 +11,8 @@ const getTransactions = () => {
         where: {
             status: 'completed',
             callback_sent: {
-                $ne: true
-            }
+                [Sequelize.Op.ne]: true,
+            },
         },
         limit: parseInt(config.callback.size),
     });

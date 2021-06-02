@@ -18,12 +18,15 @@ class TransactionManager {
             type: 'function',
             inputs: [{
                 type: 'address[]',
+                name: 'senders',
+            },{
+                type: 'address[]',
                 name: 'recipients',
             }, {
                 type: 'uint256[]',
                 name: 'amounts',
             }],
-        }, [params.addresses, params.amounts]);
+        }, [params.fromAddresses, params.toAddresses, params.amounts]);
 
         return txOptions;
     };
@@ -45,7 +48,8 @@ class TransactionManager {
                 const _nonce      = parseInt(nonce + index);
                 transactionsChunk = transactionsChunk.map(transaction => JSON.parse(transaction));
 
-                const addresses   = transactionsChunk.map(transaction => transaction.toAcc.address);
+                const toAddresses   = transactionsChunk.map(transaction => transaction.toAcc.address);
+                const fromAddresses   = transactionsChunk.map(transaction => transaction.fromAcc.address);
                 const amounts     = transactionsChunk.map(transaction => transaction.amount);
 
                 const params = {
@@ -53,7 +57,8 @@ class TransactionManager {
                     from: config.web3.default_address,
                     privateKey: config.web3.private_key,
                     amounts: amounts,
-                    addresses: addresses
+                    toAddresses: toAddresses,
+                    fromAddresses: fromAddresses,
                 };
 
                 const slottransaction = this.generateTransaction(_nonce, params);
