@@ -5,6 +5,7 @@ import config from '../config/config'
 import { getReceipt } from '../server/lib/web3';
 import { add as addToQueue } from '../queue/queue';
 import logger from '../config/winston'
+import Sequelize from 'sequelize'
 
 const Transaction = db.Transaction;
 
@@ -44,13 +45,13 @@ const generateBulkQuery = (transactions) => {
 };
 
 // Re-queue transactions that are not processed by the queue handler for a long time
-const fetchQueueTransactions = () => {
+const fetchTransactionStuckInRedis = () => {
     // const interval = 300 + 5; // 300 minutes
     return Transaction.findAll({
         where: {
             status: 'initiated',
             updatedAt: {
-                $lt: db.sequelize.fn('DATE_SUB', db.sequelize.fn('NOW'), db.sequelize.literal('INTERVAL 1 HOUR'))
+                [Sequelize.Op.lt]: db.sequelize.fn('DATE_SUB', db.sequelize.fn('NOW'), db.sequelize.literal('INTERVAL 1 DAY'))
             }
         },
         include: [
@@ -62,13 +63,13 @@ const fetchQueueTransactions = () => {
     });
 };
 
-const fetchStuckTransactions = () => {
+const fetchTransactionStuckInBlockchain = () => {
     // const interval = 300 + 5; // 300 minutes
     return Transaction.findAll({
         where: {
             status: 'pending',
             processedAt: {
-                $lt: db.sequelize.fn('DATE_SUB', db.sequelize.fn('NOW'), db.sequelize.literal('INTERVAL 1 HOUR'))
+                [Sequelize.Op.lt]: db.sequelize.fn('DATE_SUB', db.sequelize.fn('NOW'), db.sequelize.literal('INTERVAL 1 DAY'))
             }
         },
         include: [
@@ -80,12 +81,12 @@ const fetchStuckTransactions = () => {
     });
 };
 
-const fetchPendingTransactions = () => {
+const fetchTransactionPendingConfirmation = () => {
     return Transaction.findAll({
         where: {
             status: 'pending',
             processedAt: {
-                $gt: db.sequelize.fn('DATE_SUB', db.sequelize.fn('NOW'), db.sequelize.literal('INTERVAL 10 DAY'))
+                [Sequelize.Op.gt]: db.sequelize.fn('DATE_SUB', db.sequelize.fn('NOW'), db.sequelize.literal('INTERVAL 1 DAY'))
             }
         },
         group: ['transactionHash'],
@@ -94,9 +95,10 @@ const fetchPendingTransactions = () => {
     });
 }
 
-const processStuckTransactions = () => {
-    fetchStuckTransactions()
+const processTransactionsStuckInBlockchain = () => {
+    fetchTransactionStuckInBlockchain()
       .then((transactions) => {
+          console.log("stuck in blockchain: ", transactions.length)
           for (let i = 0; i < transactions.length; i++) {
               addToQueue(config.queue.name, transactions[i]);
           }
@@ -104,8 +106,8 @@ const processStuckTransactions = () => {
       .catch(logger.warn);
 };
 
-const processQueueTransactions = () => {
-    fetchQueueTransactions()
+const processTransactionsStuckInRedis = () => {
+    fetchTransactionStuckInRedis()
       .then((transactions) => {
           console.log("stuck in queue: ", transactions.length)
           for (let i = 0; i < transactions.length; i++) {
@@ -115,8 +117,8 @@ const processQueueTransactions = () => {
       .catch(logger.warn);
 };
 
-const processPendingTransactions = () => {
-    fetchPendingTransactions()
+const processTransactionsPendingConfirmation = () => {
+    fetchTransactionPendingConfirmation()
       .then((transactions) => {
           generateBulkQuery(transactions);
           console.log("pending confirmation: ", transactions.length)
@@ -126,32 +128,31 @@ const processPendingTransactions = () => {
 };
 
 // Runs a task every minute
-const completedTask = cron.schedule('* * * * *', () => {
-    processStuckTransactions();
+const pendingConfirmation = cron.schedule('* * * * *', () => {
+    processTransactionsPendingConfirmation();
 });
 
-const pendingTask = cron.schedule('* * * * *', () => {
-    processPendingTransactions();
+const stuckInBlockchain = cron.schedule('* * * * *', () => {
+    processTransactionsStuckInBlockchain();
 });
 
-const queueTask = cron.schedule('* * * * *', () => {
-    processQueueTransactions();
+const stuckInRedis = cron.schedule('* * * * *', () => {
+    processTransactionsStuckInRedis();
 });
 
-completedTask.start();
-completedTask.stop();
+pendingConfirmation.start();
+// completedTask.stop();
 
-pendingTask.start();
+stuckInBlockchain.start();
 // pendingTask.stop();
 
-queueTask.start();
+stuckInRedis.start();
 // startProcessing();
 
 setTimeout(() => {
-    // processStuckTransactions();
-    
-    processQueueTransactions();
-    processPendingTransactions();
+    processTransactionsStuckInRedis();
+    processTransactionsStuckInBlockchain();
+    processTransactionsPendingConfirmation();
 }, 1000);
 
 export default cron;

@@ -8,7 +8,7 @@ const Currency = db.Currency;
  * Load currency and append to req.
  */
 function load(req, res, next, id) {
-    Currency.findById(id)
+    Currency.findByPk(id)
         .then((currency) => {
             if (!currency) {
                 const e = new APIError('Currency does not exist');
@@ -83,7 +83,10 @@ function updateOrCreate(req, res, next){
     })
     .then((currency) => {
         if (currency) {
-            return currency.updateAttributes(update)
+            return currency.update(update, {
+                hooks: false,
+                validate: false,
+            })
             .then(savedCurrency => res.status(200).json(savedCurrency))
             .catch(e => next(e))
         } else {

@@ -1,4 +1,3 @@
-import kue from 'kue';
 import config from '../config/config'
 import client from './client'
 import TransactionManager from './TransactionManager';
@@ -27,7 +26,7 @@ const setStatus = (transaction, status, params) => {
                 if (newTransaction) {
                     params = params || {};
                     params.status = status;
-                    return newTransaction.updateAttributes(params, {
+                    return newTransaction.update(params, {
                         hooks: false,
                         validate: false,
                     })

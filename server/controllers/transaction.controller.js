@@ -9,7 +9,7 @@ const Transaction = db.Transaction;
  * Load transaction and append to req.
  */
 function load(req, res, next, id) {
-    Transaction.findById(id)
+    Transaction.findByPk(id)
         .then((transaction) => {
             if (!transaction) {
                 const e = new APIError('Transaction does not exist');

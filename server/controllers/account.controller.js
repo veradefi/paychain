@@ -9,7 +9,7 @@ const Account = db.Account;
  * Load account and append to req.
  */
 function load(req, res, next, id) {
-    Account.findById(id)
+    Account.findByPk(id)
         .then((account) => {
             if (!account) {
                 const e = new APIError('Account does not exist');

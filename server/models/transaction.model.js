@@ -163,13 +163,13 @@ module.exports = (sequelize, DataTypes) => {
 
                         let fromBalance = new BN(newTransaction.fromAcc.balance);
                         fromBalance = fromBalance.sub(new BN(newTransaction.amount));
-                        await newTransaction.fromAcc.updateAttributes({
+                        await newTransaction.fromAcc.update({
                             balance: fromBalance.toString(),
                         }, transaction);
 
                         let toBalance = new BN(newTransaction.toAcc.balance);
                         toBalance = toBalance.add(new BN(newTransaction.amount));
-                        await newTransaction.toAcc.updateAttributes({
+                        await newTransaction.toAcc.update({
                             balance: toBalance.toString(),
                         }, transaction);
 
