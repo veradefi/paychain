@@ -1,5 +1,6 @@
-var chainpayCoin = artifacts.require("./chainpayCoin.sol");
-var chainpayCoinSale = artifacts.require("./chainpayCoinSale.sol");
+var ChainPayContract = artifacts.require("./ChainPayContract.sol");
+var chainpayCoin= artifacts.require("./chainpayCoin.sol");
+//var chainpayCoinSale = artifacts.require("./chainpayCoinSale.sol");
 
 module.exports = function(deployer, network, accounts) {
 	deployer.deploy(chainpayCoin).then(function(){
@@ -8,11 +9,12 @@ module.exports = function(deployer, network, accounts) {
 			console.log('chainpayCoin : ', tokenInstance.address);
 			console.log('=======================================');
 
-			deployer.deploy(chainpayCoinSale, tokenInstance.address).then(function() {
-				chainpayCoinSale.deployed().then(async function(saleInstance) {
+
+			deployer.deploy(ChainPayContract, tokenInstance.address).then(function() {
+				ChainPayContract.deployed().then(async function(saleInstance) {
 
 					console.log('=======================================');
-					console.log('chainpayCoinSale : ', saleInstance.address);
+					console.log('Chainpay: ', saleInstance.address);
 					console.log('=======================================');
 
 				});
