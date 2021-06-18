@@ -51,3 +51,8 @@ node_modules
 .env
 
 build/
+
+package-lock.json
+.env_prod
+yarn.lock
+
