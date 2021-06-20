@@ -1,17 +1,18 @@
 pragma solidity ^0.4.18;
 
-import 'contracts/chainpayCoin.sol';
+
+import 'contracts/FreedomCoin.sol';
 
 /**
- * @title chainpayCoin
- * @dev ICO Contract
+ * @title FreedomCoin
+ * @dev Initial Coin Offering Sale Contract
  */
-contract chainpayCoinSale is Ownable {
+contract FreedomCoinSale is Ownable {
 
 	using SafeMath for uint256;
 
 	// The token being sold, this holds reference to main token contract
-	chainpayCoin public token;
+	FreedomCoin public token;
 
 	address[] users;
 
@@ -19,14 +20,13 @@ contract chainpayCoinSale is Ownable {
 	event AddUser( address _user, uint _amount, uint _time );
 
 	mapping (address => uint256) public userAmount;
-	mapping (address => bool) public isUserRegistered;
 
 	/**
 	* @dev Constructor that initializes token contract with token address in parameter
 	*/
-	function chainpayCoinSale(address _token) public {
+	constructor(address _token) public {
 		// set token
-		token = chainpayCoin(_token);
+		token = FreedomCoin(_token);
 	}
 
 	/**
@@ -37,7 +37,15 @@ contract chainpayCoinSale is Ownable {
 	}
 
 	function userExists(address _user) internal constant returns (bool) {
-	    return isUserRegistered[_user];
+		for( uint i = 0 ; i < users.length ; i++ ) {
+			if(users[i] == _user)
+
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	function addUser( address _user, uint _amount ) onlyOwner public {
@@ -47,8 +55,7 @@ contract chainpayCoinSale is Ownable {
 		if(!userExists(_user)) {
 			users.push(_user);
 		}
-        
-        isUserRegistered[_user] = true;
+
 		emit AddUser( _user, _amount, now);
 	}
 
@@ -73,7 +80,7 @@ contract chainpayCoinSale is Ownable {
 
 		uint256 amount = 0;
 		for( uint i = 0 ; i < users.length ; i++ ) {
-			amount = amount.add(userAmount[users[i]]);
+			amount = amount + userAmount[users[i]];
 		}
 
 		// check if value of the tokens is valid

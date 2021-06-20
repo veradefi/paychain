@@ -1,0 +1,20 @@
+var HDWalletProvider = require("truffle-hdwallet-provider");
+var mnemonic = "wife sheriff rough kiss toy lottery wrap nuclear foster zoo victory hand fossil sign furnace";
+module.exports = {
+  compilers: {
+    solc: {
+      version: "0.4.26"
+    }
+  },
+  networks: {
+    dev: {
+         provider: function() {
+                return new HDWalletProvider(mnemonic, "mainnet.infura.io/v3/84cbf794ba5d41879f656641cfe33144");
+            },
+        from:"0x5a1c3D8C9435B1897cc2972e2530EE6217C02FC5",
+        network_id: "*", // Match any network id
+      gas: 4600000,
+      gasPrice: 10000000000
+    }
+  }
+};

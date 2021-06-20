@@ -1,24 +1,37 @@
-var ChainPayContract = artifacts.require("./ChainPayContract.sol");
-var chainpayCoin= artifacts.require("./chainpayCoin.sol");
-//var chainpayCoinSale = artifacts.require("./chainpayCoinSale.sol");
+var FreedomCoin = artifacts.require("./FreedomCoin.sol");
+var FreedomCoinSale = artifacts.require("./FreedomCoinSale.sol");
+var ChainpayContract = artifacts.require("./ChainpayContract.sol");
 
 module.exports = function(deployer, network, accounts) {
-	deployer.deploy(chainpayCoin).then(function(){
-		chainpayCoin.deployed().then(async function(tokenInstance) {
+	deployer.deploy(FreedomCoin).then(function(){
+		FreedomCoin.deployed().then(async function(tokenInstance) {
+			console.log('Deploying FreedomCoin Smart Contract ... ' );
 			console.log('=======================================');
-			console.log('chainpayCoin : ', tokenInstance.address);
+			console.log('FreedomCoin : ', tokenInstance.address);
 			console.log('=======================================');
 
+			//deployer.deploy(FreedomCoinSale, tokenInstance.address).then(function() {
+				//FreedomCoinSale.deployed().then(async function(saleInstance) {
 
-			deployer.deploy(ChainPayContract, tokenInstance.address).then(function() {
-				ChainPayContract.deployed().then(async function(saleInstance) {
+                    //console.log('Deploying Sale Smart Contract ... ' );
+                    //console.log('=======================================');
+					//console.log('FreedomCoinSale : ', saleInstance.address);
+					//console.log('=======================================');
 
-					console.log('=======================================');
-					console.log('Chainpay: ', saleInstance.address);
+				//});
+			//});
+
+			deployer.deploy(ChainpayContract, tokenInstance.address).then(function() {
+				ChainpayContract.deployed().then(async function(chainpayInstance) {
+
+                    console.log('Deploying Chainpay Smart Contract ... ' );
+                    console.log('=======================================');
+					console.log('ChainpayContract : ', chainpayInstance.address);
 					console.log('=======================================');
 
 				});
 			});
+
 		});
 	});
 };

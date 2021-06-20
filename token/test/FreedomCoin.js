@@ -1,7 +1,7 @@
 'use strict';
 var assert_throw = require('./utils/utils').assert_throw;
-var chainpayCoin = artifacts.require('./chainpayCoin.sol');
-var chainpayCoinSale = artifacts.require('./chainpayCoinSale.sol');
+var freedomCoin = artifacts.require('./FreedomCoin.sol');
+var freedomCoinSale = artifacts.require('./FreedomCoinSale.sol');
 
 const promisify = (inner) =>
 	new Promise((resolve, reject) =>
@@ -18,16 +18,17 @@ var saleInstance;
 
 var owner;
 
-contract('chainpayCoin' , (accounts) => {
+contract('freedomCoin' , (accounts) => {
 	owner = accounts[0];
+
 	beforeEach(async () => {
-		tokenInstance = await chainpayCoin.new({from: owner});
-		saleInstance = await chainpayCoinSale.new(tokenInstance.address , {from: owner});
+		tokenInstance = await freedomCoin.new({from: owner});
+		saleInstance = await freedomCoinSale.new(tokenInstance.address , {from: owner});
 	});
 
 	it('should match name' , async () => {
 		var name = await tokenInstance.name.call();
-		assert.equal(name , 'ChainpayCoin' , 'name does not match');		
+		assert.equal(name , 'FreedomCoin' , 'name does not match');		
 	});
 
 	it('should match name after update' , async () => {
@@ -38,7 +39,7 @@ contract('chainpayCoin' , (accounts) => {
 
 	it('should match symbol' , async () => {
 		var symbol = await tokenInstance.symbol.call();
-		assert.equal(symbol , 'CPC' , 'symbol does not match');		
+		assert.equal(symbol , 'FC' , 'symbol does not match');		
 	});
 
 	it('should match symbol after update' , async () => {
@@ -55,7 +56,7 @@ contract('chainpayCoin' , (accounts) => {
 	it('owner should have full balance' , async () => {
 		var balance = await tokenInstance.balanceOf.call(owner);
 
-		assert.equal(balance.toNumber(), 500000000 * 1E18 , 'owner balance does not match');		
+		assert.equal(balance.toNumber(), 1000000000 * 1E18 , 'owner balance does not match');		
 	});
 
 	it('should match sale token address' , async () => {
@@ -500,7 +501,7 @@ contract('chainpayCoin' , (accounts) => {
 		var listCount = await saleInstance.userCount(); 
 		assert.equal(count , listCount.toNumber() , 'Count of User List should match after Adding Users');
 
-		var account2 = accounts[accounts.length - 1];
+		var account2 = accounts[9];
 		var unit = 10E18;
 
 		await saleInstance.addUser(account2 , unit , {from: account1});

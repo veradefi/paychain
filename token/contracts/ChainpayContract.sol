@@ -1,5 +1,6 @@
 pragma solidity ^0.4.18;
 
+
 contract SimpleERC20Token {
     mapping (address => uint256) public balanceOf;
 
@@ -10,7 +11,7 @@ contract SimpleERC20Token {
     uint256 public totalSupply = 1000000 * (uint256(10) ** decimals);
     mapping(address => mapping(address => uint256)) public allowance;
 
-    ChainPayContract chainpayContract;
+    ChainpayContract chainpayContract;
     address owner;
 
     event Transfer(address indexed from, address indexed to, uint256 value);
@@ -42,7 +43,7 @@ contract SimpleERC20Token {
         return owner;
     }
     
-    function setChainpayAddress(ChainPayContract chainpayContract_) public onlyOwner {
+    function setChainpayAddress(ChainpayContract chainpayContract_) public onlyOwner {
         require(address(chainpayContract_) != address(0));
         chainpayContract = chainpayContract_;
     }
@@ -96,7 +97,8 @@ contract SimpleERC20Token {
 
 }
 
-contract ChainPayContract {
+
+contract ChainpayContract {
     
     SimpleERC20Token token;
     address owner;
