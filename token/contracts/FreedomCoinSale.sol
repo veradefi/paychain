@@ -1,4 +1,4 @@
-pragma solidity ^0.4.18;
+pragma solidity ^0.5.8;
 
 
 import 'contracts/FreedomCoin.sol';
@@ -24,7 +24,7 @@ contract FreedomCoinSale is Ownable {
 	/**
 	* @dev Constructor that initializes token contract with token address in parameter
 	*/
-	constructor(address _token) public {
+	constructor(address payable _token) public {
 		// set token
 		token = FreedomCoin(_token);
 	}
@@ -32,11 +32,11 @@ contract FreedomCoinSale is Ownable {
 	/**
 	 * @dev Default fallback method which will be called when any ethers are sent to contract
 	 */
-	function() public payable {
+	function() external payable {
 		revert();
 	}
 
-	function userExists(address _user) internal constant returns (bool) {
+	function userExists(address _user) internal view returns (bool) {
 		for( uint i = 0 ; i < users.length ; i++ ) {
 			if(users[i] == _user)
 
@@ -60,14 +60,14 @@ contract FreedomCoinSale is Ownable {
 	}
 
 	// an optimization in case of network congestion
-	function addUsers( address[] _users, uint[] _amounts ) onlyOwner public {
+	function addUsers( address[] memory _users, uint[] memory _amounts ) onlyOwner public {
 		require(_users.length == _amounts.length);
 		for( uint i = 0 ; i < _users.length ; i++ ) {
 			addUser( _users[i], _amounts[i] );
 		}
 	}
 
-	function userCount() onlyOwner public constant returns (uint) {
+	function userCount() onlyOwner public view returns (uint) {
 		return users.length;
 	}
 
@@ -76,7 +76,7 @@ contract FreedomCoinSale is Ownable {
 	 *
 	 * @return checks various conditions and returns the bool result indicating validition.
 	 */	
-	function validate() internal constant returns (bool) {
+	function validate() internal view returns (bool) {
 
 		uint256 amount = 0;
 		for( uint i = 0 ; i < users.length ; i++ ) {
@@ -87,7 +87,7 @@ contract FreedomCoinSale is Ownable {
 		bool validValue = amount > 0;
 
 		// check if the tokens available in contract for sale
-		uint256 balanceOfSale = token.balanceOf(this);
+		uint256 balanceOfSale = token.balanceOf(address(this));
 		bool validAmount = balanceOfSale >= amount;
 
 		return validValue && validAmount;

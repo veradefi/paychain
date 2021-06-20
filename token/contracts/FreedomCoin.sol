@@ -1,4 +1,4 @@
-pragma solidity ^0.4.18;
+pragma solidity ^0.5.8;
 
 
 /**
@@ -218,7 +218,7 @@ contract Whitelist is Ownable {
      * @return true if at least one address was added to the whitelist,
      * false if all addresses were already in the whitelist
      */
-    function addAddressesToWhitelist(address[] addrs)
+    function addAddressesToWhitelist(address[] memory addrs)
     onlyOwner
     public
     {
@@ -247,7 +247,7 @@ contract Whitelist is Ownable {
      * @return true if at least one address was removed from the whitelist,
      * false if all addresses weren't in the whitelist in the first place
      */
-    function removeAddressesFromWhitelist(address[] addrs)
+    function removeAddressesFromWhitelist(address[] memory addrs)
     onlyOwner
     public
     {
@@ -564,7 +564,7 @@ contract FreedomCoin is ERC20 {
     /**
     * @dev if ether is sent to this address, send it back.
     */
-    function () public payable {
+    function () external payable {
         revert();
     }
 
@@ -646,25 +646,20 @@ contract FreedomCoin is ERC20 {
     public
     onlyChainpayContract
     returns (bool success) {
-        require(value <= balanceOf[from]);
-
-        balanceOf[from] -= value;
-        balanceOf[to] += value;
-        emit Transfer(from, to, value);
-        return true;
+        return transmit(from, to, value);
     }
 
     /**
     * @dev change token name
     */
-    function setName(string _name) public onlyOwner {
+    function setName(string memory _name) public onlyOwner {
         name = _name;
     }
 
     /**
     * @dev change token symbol
     */
-    function setSymbol(string _symbol) public onlyOwner {
+    function setSymbol(string memory _symbol) public onlyOwner {
         symbol = _symbol;
     }
 
@@ -686,5 +681,3 @@ contract FreedomCoin is ERC20 {
     }
 
 }
-
-
