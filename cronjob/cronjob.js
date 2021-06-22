@@ -50,7 +50,7 @@ const fetchTransactionStuckInRedis = () => {
     return Transaction.findAll({
         where: {
             status: 'initiated',
-            updatedAt: {
+            processedAt: {
                 [Sequelize.Op.lt]: db.sequelize.fn('DATE_SUB', db.sequelize.fn('NOW'), db.sequelize.literal('INTERVAL 1 DAY'))
             }
         },
@@ -95,10 +95,29 @@ const fetchTransactionPendingConfirmation = () => {
     });
 }
 
+const updateProcessedAt = (transactions) => {
+    transactions.forEach(transaction => {
+        Transaction
+            .update({
+                processedAt: new Date(),
+            }, { 
+              where: { 
+                id: transaction.id 
+              },
+              hooks: false,
+              validate: false,
+            })
+            .catch((err) => {
+                logger.info(`error updating transaction status for transaction id: ${transaction.id} , ${err}`)
+            });
+    });
+}
+
 const processTransactionsStuckInBlockchain = () => {
     fetchTransactionStuckInBlockchain()
       .then((transactions) => {
-          console.log("stuck in blockchain: ", transactions.length)
+          logger.info(`stuck in blockchain at ${new Date()}: ${transactions.length}`, )
+          updateProcessedAt(transactions)
           for (let i = 0; i < transactions.length; i++) {
               addToQueue(config.queue.name, transactions[i]);
           }
@@ -109,7 +128,8 @@ const processTransactionsStuckInBlockchain = () => {
 const processTransactionsStuckInRedis = () => {
     fetchTransactionStuckInRedis()
       .then((transactions) => {
-          console.log("stuck in queue: ", transactions.length)
+          logger.info(`stuck in queue at ${new Date()}: ${transactions.length}`, )
+          updateProcessedAt(transactions)
           for (let i = 0; i < transactions.length; i++) {
               addToQueue(config.queue.name, transactions[i]);
           }
@@ -121,7 +141,7 @@ const processTransactionsPendingConfirmation = () => {
     fetchTransactionPendingConfirmation()
       .then((transactions) => {
           generateBulkQuery(transactions);
-          console.log("pending confirmation: ", transactions.length)
+          logger.info(`pending confirmation at ${new Date()}: ${transactions.length}`, )
           // console.log(transactions.length)
       })
       .catch(logger.warn);
