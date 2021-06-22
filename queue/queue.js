@@ -6,6 +6,7 @@ import db from '../config/sequelize'
 import { getTransactionCount, signTransaction, web3 } from '../server/lib/web3';
 import logger from '../config/winston'
 import "babel-polyfill";
+import Sequelize from 'sequelize'
 
 const transactionManager = new TransactionManager();
 
@@ -41,6 +42,23 @@ const setStatus = (transaction, status, params) => {
     });
 };
 
+const filterProcessedTransactions = (transactions) => {
+    const ids = transactions.map(transaction => transaction.id)
+    return Model.findAll({
+        where: {
+            status: {
+                [Sequelize.Op.notIn] : ['pending', 'completed'],
+            },
+        },
+        include: [
+            { model: db.sequelize.models.Account, as: 'fromAcc'},
+            { model: db.sequelize.models.Account, as: 'toAcc'},
+            { model: db.sequelize.models.Currency, as: 'currency'},
+        ],
+        limit: 100,
+    });
+}
+
 const processQueue = () => {
 
     const default_address = process.env.DEFAULT_ADDRESS;
@@ -68,7 +86,8 @@ const processQueue = () => {
 
         if (transactions.length > 0) {
 
-            transactionManager.sendBatchTransactions(nonceInt, transactions, 
+            const filteredTransactions = await filterProcessedTransactions(transactions)
+            transactionManager.sendBatchTransactions(nonceInt, filteredTransactions, 
                 (transaction, transactionHash, nonce) => {
                     setStatus(transaction, 'pending', {
                         statusDescription: '',

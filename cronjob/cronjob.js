@@ -86,7 +86,7 @@ const fetchTransactionPendingConfirmation = () => {
         where: {
             status: 'pending',
             processedAt: {
-                [Sequelize.Op.gt]: db.sequelize.fn('DATE_SUB', db.sequelize.fn('NOW'), db.sequelize.literal('INTERVAL 1 DAY'))
+                [Sequelize.Op.gt]: db.sequelize.fn('DATE_SUB', db.sequelize.fn('NOW'), db.sequelize.literal('INTERVAL 5 MINUTE'))
             }
         },
         group: ['transactionHash'],

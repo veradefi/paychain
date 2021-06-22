@@ -144,6 +144,9 @@ module.exports = (sequelize, DataTypes) => {
                     instance.processedAt = new Date();
                 }
             },
+            beforeCreate: function(instance, options) {
+                instance.processedAt = new Date()
+            },
             afterCreate: function(transaction, options) {
                 sequelize.models.Transaction.findOne({
                     where: {
