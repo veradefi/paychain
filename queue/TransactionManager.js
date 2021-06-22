@@ -46,7 +46,7 @@ class TransactionManager {
             Promise.all(transactionsChunks.map((transactionsChunk, index) => {
 
                 const _nonce      = parseInt(nonce + index);
-                transactionsChunk = transactionsChunk.map(transaction => JSON.parse(transaction));
+                // transactionsChunk = transactionsChunk.map(transaction => JSON.parse(transaction));
 
                 const toAddresses   = transactionsChunk.map(transaction => transaction.toAcc.address);
                 const fromAddresses   = transactionsChunk.map(transaction => transaction.fromAcc.address);
