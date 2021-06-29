@@ -135,6 +135,15 @@ module.exports = (sequelize, DataTypes) => {
                     }
                 })
                 .catch(next);
+            },
+            amountGreaterThanZero: function (next) {
+                let amount = new BN(this.amount);
+                let zeroAmount = new BN("0")
+                if (amount.lte(zeroAmount)) {
+                    next(new APIError("Amount should be greater than zero"));
+                } else {
+                    next();
+                }
             }
         },
         hooks: {
