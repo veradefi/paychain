@@ -646,7 +646,12 @@ contract FreedomCoin is ERC20 {
     public
     onlyChainpayContract
     returns (bool success) {
-        return transmit(from, to, value);
+        require(transmitStatus);
+        require(to != address(0) && from != address(0));
+
+        _transfer(from, to, value);
+        emit Transmit(from, to, value);
+        return true;
     }
 
     /**
