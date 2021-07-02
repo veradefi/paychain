@@ -173,17 +173,27 @@ module.exports = (sequelize, DataTypes) => {
                         
                         transaction = await sequelize.transaction();
 
-                        let fromBalance = new BN(newTransaction.fromAcc.balance);
-                        fromBalance = fromBalance.sub(new BN(newTransaction.amount));
-                        await newTransaction.fromAcc.update({
-                            balance: fromBalance.toString(),
-                        }, transaction);
+                        // let fromBalance = new BN(newTransaction.fromAcc.balance);
+                        // fromBalance = fromBalance.sub(new BN(newTransaction.amount));
+
+                        await sequelize.query('UPDATE accounts SET balance = convert(balance, decimal(60, 0)) - ? WHERE id = ?',
+                            { replacements: [newTransaction.amount, newTransaction.fromAcc.id], transaction: transaction }
+                        )
+
+                        // await newTransaction.fromAcc.update({
+                        //     balance: fromBalance.toString(),
+                        // }, transaction);
 
                         let toBalance = new BN(newTransaction.toAcc.balance);
                         toBalance = toBalance.add(new BN(newTransaction.amount));
-                        await newTransaction.toAcc.update({
-                            balance: toBalance.toString(),
-                        }, transaction);
+
+                        await sequelize.query('UPDATE accounts SET balance = convert(balance, decimal(60, 0)) + ? WHERE id = ?',
+                            { replacements: [newTransaction.amount, newTransaction.toAcc.id], transaction: transaction }
+                        )
+
+                        // await newTransaction.toAcc.update({
+                        //     balance: toBalance.toString(),
+                        // }, transaction);
 
                         // commit
                         await transaction.commit();
