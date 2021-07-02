@@ -87,6 +87,10 @@ const processQueue = () => {
         if (transactions.length > 0) {
 
             const filteredTransactions = await filterProcessedTransactions(transactions)
+            if (filteredTransactions.length <= 0) {
+                logger.info(`No new transactions ${new Date()}`);
+                return;
+            }
             transactionManager.sendBatchTransactions(nonceInt, filteredTransactions, 
                 (transaction, transactionHash, nonce) => {
                     setStatus(transaction, 'pending', {
