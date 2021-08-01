@@ -8,14 +8,14 @@ import child_process from 'child_process';
 const router = express.Router(); // eslint-disable-line new-cap
 
 router.get('/', (req, res) => {
-      const revision = child_process
+/*      const revision = child_process
         .execSync('git rev-parse --short HEAD')
         .toString().trim();
 
       const date = child_process
         .execSync('git log -1 --format=%cd')
-        .toString().trim();
-      res.send('API Version v' + version + ' commit ' + revision + ' at ' + date +' <a href="https://app.apiary.io/fpblockchain/editor">docs</a>') 
+        .toString().trim(); */
+      res.send('API Version  __VER__  at  __DATE__ ' );
   }
 );
 

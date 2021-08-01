@@ -82,7 +82,7 @@ const processQueue = () => {
             await client.set(config.queue.name + ":" + default_address, nonceInt);
         };
 
-        logger.info(`nonce: ${nonceInt}, web3Nonce: ${web3Nonce} at:  ${new Date()}`)
+        logger.info(`${new Date()} > nonce: ${nonceInt}, web3Nonce: ${web3Nonce} `)
 
         const transactions   = await client.lrangeAsync(config.queue.name, 0, config.batch.size - 1);
         const removeCommand  = await client.ltrimAsync(config.queue.name, transactions.length, 100000);
@@ -90,12 +90,12 @@ const processQueue = () => {
         const multi          = client.multi()
                                      .set(config.queue.name + ":" + default_address, nonceIncrement);
 
-        logger.info(`Transaction to process: ${transactions.length} at: ${new Date()}`);                  
+        logger.info(`${new Date()} > Transaction to process: ${transactions.length}`);                  
         if (transactions.length > 0) {
 
             const filteredTransactions = await filterProcessedTransactions(transactions)
             if (filteredTransactions.length <= 0) {
-                logger.info(`No new transactions ${new Date()}`);
+                logger.info(`${new Date()} > No new transactions`);
                 setTimeout(() => {
                     processQueue();
                 }, config.batch.time)
