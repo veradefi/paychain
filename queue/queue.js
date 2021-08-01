@@ -43,11 +43,17 @@ const setStatus = (transaction, status, params) => {
 };
 
 const filterProcessedTransactions = (transactions) => {
-    const ids = transactions.map(transaction => transaction.id)
+    const ids = transactions.map(transaction => {
+        transaction = JSON.parse(transaction)
+        return transaction.id
+    })
     return Model.findAll({
         where: {
             status: {
-                [Sequelize.Op.notIn] : ['pending', 'completed'],
+                [Sequelize.Op.notIn]: ['pending', 'completed'],
+            },
+            id: {
+                [Sequelize.Op.in]: ids,
             },
         },
         include: [
@@ -76,7 +82,7 @@ const processQueue = () => {
             await client.set(config.queue.name + ":" + default_address, nonceInt);
         };
 
-        console.log("nonce: ", nonceInt, ", web3Nonce: " , web3Nonce);
+        logger.info(`nonce: ${nonceInt}, web3Nonce: ${web3Nonce} at:  ${new Date()}`)
 
         const transactions   = await client.lrangeAsync(config.queue.name, 0, config.batch.size - 1);
         const removeCommand  = await client.ltrimAsync(config.queue.name, transactions.length, 100000);
@@ -84,11 +90,15 @@ const processQueue = () => {
         const multi          = client.multi()
                                      .set(config.queue.name + ":" + default_address, nonceIncrement);
 
+        logger.info(`Transaction to process: ${transactions.length} at: ${new Date()}`);                  
         if (transactions.length > 0) {
 
             const filteredTransactions = await filterProcessedTransactions(transactions)
             if (filteredTransactions.length <= 0) {
                 logger.info(`No new transactions ${new Date()}`);
+                setTimeout(() => {
+                    processQueue();
+                }, config.batch.time)
                 return;
             }
             transactionManager.sendBatchTransactions(nonceInt, filteredTransactions, 
@@ -184,7 +194,6 @@ const initQueue = () => {
                 // Start first batch of the queue immediately
                 console.log("start time", config.batch.time)
                 setTimeout(() => {
-                    console.log("asas")
                     processQueue();
                 }, config.batch.time)
             }    
